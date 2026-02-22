@@ -6,7 +6,10 @@ import {
   findOneToOneConversation,
   checkMemberShip,
 } from "../repositories/conversation.repo.js";
-import { getConversationMembers } from "../repositories/conversation.member.repo.js";
+import {
+  getConversationMembers,
+  addMember,
+} from "../repositories/conversation.member.repo.js";
 import { findUserById } from "../repositories/user.repo.js";
 import ApiError from "../utils/apiError.js";
 
@@ -107,9 +110,32 @@ const getConversationMembersService = async (conversationId, userId) => {
   return members;
 };
 
+//add member to conversation
+const addMemberService = async (conversationId, userId) => {
+  //check if conversation exists
+  const conversation = await findConversationById(conversationId);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+  //check if user exists
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new ApiError(400, "User does not exist");
+  }
+
+  //check if user is already a member of the conversation
+  const isMember = await checkMemberShip(conversationId, userId);
+  if (isMember) {
+    throw new ApiError(400, "User is already a member of the conversation");
+  }
+  const memeber = await addMember(conversationId, userId);
+  return memeber;
+};
+
 export {
   createConversationService,
   getConversationByIdService,
   getUserConversationsService,
   getConversationMembersService,
+  addMemberService,
 };

@@ -3,6 +3,7 @@ import {
   getConversationByIdService,
   getUserConversationsService,
   getConversationMembersService,
+  addMemberService,
 } from "../services/conversation.service.js";
 import ApiResponse from "../utils/apiResponse.js";
 import ApiError from "../utils/apiError.js";
@@ -78,9 +79,28 @@ const getConversationMembers = asyncHandler(async (req, res) => {
     );
 });
 
+//add member to conversation
+const addMember = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+  const { id: conversationId } = req.params;
+  if (!conversationId) {
+    throw new ApiError(400, "conversation id is required");
+  }
+  if (!userId) {
+    throw new ApiError(400, "user id is required");
+  }
+  const member = await addMemberService(conversationId, userId);
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(201, `member added to conversation successfully`, member),
+    );
+});
+
 export {
   createConversation,
   getConversationById,
   getUserConversations,
   getConversationMembers,
+  addMember,
 };
