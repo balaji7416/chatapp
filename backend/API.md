@@ -2,6 +2,16 @@
 
 > **NOTE**: All response data is wrapped in a `data` field.
 > Example: `res.data.user` or `res.data.refresh_token`
+> response object - `{status,message,data: {}}`
+
+## Common Status Codes
+
+- `200` - Success
+- `201` - Created
+- `400` - Bad request (invalid input)
+- `401` - Unathorized (missing/invalid token)
+- `403` - Forbidden (no permission)
+- `404` - Resource not found
 
 ## Authentication
 
@@ -70,3 +80,9 @@
   - URL params: `id` - conversation ID
   - **AUTH**: required + must be member
   - Returns: `{conversationId, leftUserId, conversationName, leftUsername}`
+
+- **DELETE /api/conversations/:id**
+  - Delete conversation
+  - URL params: `id` - conversation ID
+  - **Auth**: required + must be admin
+  - returns: `{message, data: {id,name}}`

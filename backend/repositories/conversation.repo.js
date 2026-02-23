@@ -104,10 +104,22 @@ const checkMemberShip = async (conversation_id, user_id) => {
   return rows.length > 0;
 };
 
+//delete conversation
+const deleteConversation = async (conversation_id) => {
+  const query = `
+    delete from conversations
+    where id = $1
+    returning id,name
+  `;
+  const { rows } = await pool.query(query, [conversation_id]);
+  return rows[0];
+};
+
 export {
   createConversation,
   findConversationById,
   findUserConversations,
   findOneToOneConversation,
   checkMemberShip,
+  deleteConversation,
 };

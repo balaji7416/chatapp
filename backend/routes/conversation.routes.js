@@ -8,6 +8,7 @@ import {
   addMember,
   removeMember,
   leaveConversation,
+  deleteConversation,
 } from "../controllers/conversation.controller.js";
 import authenticate from "../middleware/auth.middleware.js";
 const router = Router();
@@ -27,3 +28,4 @@ router.delete(
   authenticate,
   removeMember,
 );
+router.delete("/:id", authenticate, deleteConversation);

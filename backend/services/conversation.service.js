@@ -5,6 +5,7 @@ import {
   findUserConversations,
   findOneToOneConversation,
   checkMemberShip,
+  deleteConversation,
 } from "../repositories/conversation.repo.js";
 import {
   getConversationMembers,
@@ -229,6 +230,32 @@ const leaveConversationService = async (conversationId, userId) => {
   };
 };
 
+const deleteConversationService = async (conversationId, userId) => {
+  //check if conversation exists
+  const conversation = await findConversationById(conversationId);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+
+  //check if user exists
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new ApiError(400, "User does not exist");
+  }
+
+  //check if user has access to delete the conversatoin
+  const hasAccess = await isAdmin(conversationId, userId);
+  if (!hasAccess) {
+    throw new ApiError(
+      403,
+      "You don't have access to delete this conversation",
+    );
+  }
+
+  const result = await deleteConversation(conversationId);
+  return result;
+};
+
 export {
   createConversationService,
   getConversationByIdService,
@@ -237,4 +264,5 @@ export {
   addMemberService,
   removeMemberService,
   leaveConversationService,
+  deleteConversationService,
 };
