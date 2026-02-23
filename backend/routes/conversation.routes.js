@@ -6,14 +6,22 @@ import {
   getUserConversations,
   getConversationMembers,
   addMember,
+  removeMember,
 } from "../controllers/conversation.controller.js";
 import authenticate from "../middleware/auth.middleware.js";
 const router = Router();
 
-router.post("/", authenticate, createConversation);
-router.post("/:id/members", authenticate, addMember); //add a single member
-router.get("/:id", authenticate, getConversationById);
-router.get("/", authenticate, getUserConversations);
-router.get("/:id/members", authenticate, getConversationMembers);
+router.post("/", authenticate, createConversation); // create a conversation
+router.post("/:conversationId/members/:userIdToAdd", authenticate, addMember); //add a single member
+
+router.get("/:id", authenticate, getConversationById); // get conversation by id
+router.get("/", authenticate, getUserConversations); // get user conversations
+router.get("/:id/members", authenticate, getConversationMembers); //get conversation members
+
+router.delete(
+  "/:conversationId/members/:userIdToRemove",
+  authenticate,
+  removeMember,
+);
 
 export default router;

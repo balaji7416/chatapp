@@ -4,6 +4,7 @@ import {
   getUserConversationsService,
   getConversationMembersService,
   addMemberService,
+  removeMemberService,
 } from "../services/conversation.service.js";
 import ApiResponse from "../utils/apiResponse.js";
 import ApiError from "../utils/apiError.js";
@@ -73,7 +74,7 @@ const getConversationMembers = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        `conversation-${id} members fetched successfully`,
+        `conversation-${memebers[0]?.conversation_name || id} members fetched successfully`,
         memebers,
       ),
     );
@@ -81,20 +82,42 @@ const getConversationMembers = asyncHandler(async (req, res) => {
 
 //add member to conversation
 const addMember = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-  const { id: conversationId } = req.params;
+  const { conversationId, userIdToAdd } = req.params;
   if (!conversationId) {
     throw new ApiError(400, "conversation id is required");
   }
-  if (!userId) {
-    throw new ApiError(400, "user id is required");
+  if (!userIdToAdd) {
+    throw new ApiError(400, "added user id is required");
   }
-  const member = await addMemberService(conversationId, userId);
+  const member = await addMemberService(
+    conversationId,
+    req.user.id,
+    userIdToAdd,
+  );
   return res
     .status(201)
     .json(
       new ApiResponse(201, `member added to conversation successfully`, member),
     );
+});
+
+const removeMember = asyncHandler(async (req, res) => {
+  const { conversationId, userIdToRemove } = req.params;
+  if (!conversationId) {
+    throw new ApiError(400, "conversation id is required");
+  }
+  if (!userIdToRemove) {
+    throw new ApiError(400, "user id to remove is required");
+  }
+
+  const member = await removeMemberService(
+    conversationId,
+    req.user.id,
+    userIdToRemove,
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "member removed successfully", member));
 });
 
 export {
@@ -103,4 +126,5 @@ export {
   getUserConversations,
   getConversationMembers,
   addMember,
+  removeMember,
 };

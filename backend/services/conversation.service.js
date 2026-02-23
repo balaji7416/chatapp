@@ -9,6 +9,8 @@ import {
 import {
   getConversationMembers,
   addMember,
+  removeMember,
+  isAdmin,
 } from "../repositories/conversation.member.repo.js";
 import { findUserById } from "../repositories/user.repo.js";
 import ApiError from "../utils/apiError.js";
@@ -111,7 +113,7 @@ const getConversationMembersService = async (conversationId, userId) => {
 };
 
 //add member to conversation
-const addMemberService = async (conversationId, userId) => {
+const addMemberService = async (conversationId, userId, addedUserId) => {
   //check if conversation exists
   const conversation = await findConversationById(conversationId);
   if (!conversation) {
@@ -123,13 +125,71 @@ const addMemberService = async (conversationId, userId) => {
     throw new ApiError(400, "User does not exist");
   }
 
-  //check if user is already a member of the conversation
-  const isMember = await checkMemberShip(conversationId, userId);
-  if (isMember) {
-    throw new ApiError(400, "User is already a member of the conversation");
+  //check if added user exists
+  const addedUser = await findUserById(addedUserId);
+  if (!addedUser) {
+    throw new ApiError(400, "Added user does not exist");
   }
-  const memeber = await addMember(conversationId, userId);
+
+  //check if user who is adding the member is a member of the conversation
+  let isMember = await checkMemberShip(conversationId, userId);
+  if (!isMember) {
+    throw new ApiError(403, "You are not a member of this conversation");
+  }
+
+  //check if user is already a member of the conversation
+  isMember = false;
+  isMember = await checkMemberShip(conversationId, addedUserId);
+  if (isMember) {
+    throw new ApiError(
+      400,
+      "added user is already a member of the conversation",
+    );
+  }
+  const memeber = await addMember(conversationId, addedUserId);
   return memeber;
+};
+
+const removeMemberService = async (conversationId, userId, removedUserId) => {
+  //check if conversation exists
+  const conversation = await findConversationById(conversationId);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+
+  //check if user exists
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new ApiError(400, "User does not exist");
+  }
+
+  //check if removed user exists
+  const removedUser = await findUserById(removedUserId);
+  if (!removedUser) {
+    throw new ApiError(400, "Removed user does not exist");
+  }
+
+  //check if removed user is a member of the conversation
+  const isMember = await checkMemberShip(conversationId, removedUserId);
+  if (!isMember) {
+    throw new ApiError(400, "Removed user is not a member of the conversation");
+  }
+
+  //check if user has access to remove the member
+  if (!(await isAdmin(conversationId, userId))) {
+    throw new ApiError(403, "You don't have access to remove this member");
+  }
+
+  //prevent removing other admins
+  if (
+    (await isAdmin(conversationId, removedUserId)) &&
+    userId !== removedUserId
+  ) {
+    throw new ApiError(403, "You can't remove other admins");
+  }
+
+  const removedMember = await removeMember(conversationId, removedUserId);
+  return removedMember;
 };
 
 export {
@@ -138,4 +198,5 @@ export {
   getUserConversationsService,
   getConversationMembersService,
   addMemberService,
+  removeMemberService,
 };
