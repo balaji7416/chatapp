@@ -64,3 +64,9 @@
   - URL params: conversationId, userId to remove
   - **Auth**: required + must be admin
   - Returns: `{conversationId, userId}`
+
+- **DELETE /api/conversations/:id/members/me**
+  - Leave conversation (remove yourself)
+  - URL params: `id` - conversation ID
+  - **AUTH**: required + must be member
+  - Returns: `{conversationId, leftUserId, conversationName, leftUsername}`

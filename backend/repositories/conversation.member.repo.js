@@ -48,4 +48,21 @@ const isAdmin = async (conversation_id, user_id) => {
   return rows[0].role === "admin";
 };
 
-export { getConversationMembers, addMember, removeMember, isAdmin };
+//leave conversation
+const leaveConversation = async (conversation_id, user_id) => {
+  const query = `
+  delete from conversation_members
+  where conversation_id=$1 and user_id=$2
+  returning conversation_id, user_id
+  `;
+  const { rows } = await pool.query(query, [conversation_id, user_id]);
+  return rows[0];
+};
+
+export {
+  getConversationMembers,
+  addMember,
+  removeMember,
+  isAdmin,
+  leaveConversation,
+};

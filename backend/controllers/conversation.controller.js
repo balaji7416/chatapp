@@ -5,6 +5,7 @@ import {
   getConversationMembersService,
   addMemberService,
   removeMemberService,
+  leaveConversationService,
 } from "../services/conversation.service.js";
 import ApiResponse from "../utils/apiResponse.js";
 import ApiError from "../utils/apiError.js";
@@ -120,6 +121,17 @@ const removeMember = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "member removed successfully", member));
 });
 
+const leaveConversation = asyncHandler(async (req, res) => {
+  const { id: conversationId } = req.params;
+  if (!conversationId) {
+    throw new ApiError(400, "conversationId is required");
+  }
+  const result = await leaveConversationService(conversationId, req.user.id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "user left conversation successfully", result));
+});
+
 export {
   createConversation,
   getConversationById,
@@ -127,4 +139,5 @@ export {
   getConversationMembers,
   addMember,
   removeMember,
+  leaveConversation,
 };

@@ -11,6 +11,7 @@ import {
   addMember,
   removeMember,
   isAdmin,
+  leaveConversation,
 } from "../repositories/conversation.member.repo.js";
 import { findUserById } from "../repositories/user.repo.js";
 import ApiError from "../utils/apiError.js";
@@ -192,6 +193,42 @@ const removeMemberService = async (conversationId, userId, removedUserId) => {
   return removedMember;
 };
 
+const leaveConversationService = async (conversationId, userId) => {
+  //check if conversationId is a valid uui
+  if (!uuidValidate(conversationId)) {
+    throw new ApiError(400, "invalid conversation id");
+  }
+
+  //check if conversation exists
+  const conversation = await findConversationById(conversationId);
+  if (!conversation) {
+    throw new ApiError(400, "conversation doesn't exist");
+  }
+
+  //check if user exists
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new ApiError(400, "user- doesn't exist");
+  }
+
+  //check if user is a member of the conversation
+  const isMember = await checkMemberShip(conversationId, userId);
+  if (!isMember) {
+    throw new ApiError(
+      400,
+      `user-${user?.username} is not a member of conversation-${conversation?.name}`,
+    );
+  }
+
+  const result = await leaveConversation(conversationId, userId);
+  return {
+    conversationId: conversation?.id,
+    conversationName: conversation?.name,
+    leftUserId: user?.id,
+    leftUsername: user?.username,
+  };
+};
+
 export {
   createConversationService,
   getConversationByIdService,
@@ -199,4 +236,5 @@ export {
   getConversationMembersService,
   addMemberService,
   removeMemberService,
+  leaveConversationService,
 };
