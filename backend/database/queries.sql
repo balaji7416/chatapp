@@ -16,3 +16,7 @@ select id, username from users;
 
 --get all conversations
 SELECT id,name from conversations;
+
+select u.username as message_sent_by, c.name as conversation_name, m.content as message_content
+from users u inner join messages m on u.id = m.user_id
+inner join conversations c on m.conversation_id = c.id;

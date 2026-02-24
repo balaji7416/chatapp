@@ -86,3 +86,12 @@
   - URL params: `id` - conversation ID
   - **Auth**: required + must be admin
   - returns: `{message, data: {id,name}}`
+
+## Messages
+
+- **POST /api/messages/:conversationId**
+  - Sends a message to conversation
+  - URL params: `conversationId`
+  - Body: `{messageContent: "string", replyToId: "uuid" (optional)}`
+  - **Auth**: required + must be conversation member
+  - Returns: message object
