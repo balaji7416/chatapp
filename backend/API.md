@@ -95,3 +95,9 @@
   - Body: `{messageContent: "string", replyToId: "uuid" (optional)}`
   - **Auth**: required + must be conversation member
   - Returns: message object
+
+- **GET /api/messages/:conversationId**
+  - Get messages of conversation
+  - URL paramas: `conversationId`
+  - **Auth**: required + must be conversation member
+  - Returns: array of messages

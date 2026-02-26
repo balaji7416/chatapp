@@ -1,4 +1,4 @@
-import { sendMessage } from "../repositories/message.repo.js";
+import { sendMessage, getMesssages } from "../repositories/message.repo.js";
 import { findConversationById } from "../repositories/conversation.repo.js";
 import { checkMemberShip } from "../repositories/conversation.repo.js";
 import ApiError from "../utils/apiError.js";
@@ -42,4 +42,18 @@ const sendMessageService = async (
   return message;
 };
 
-export { sendMessageService };
+const getMesssagesService = async (conversation_id, user_id) => {
+  const conversation = await findConversationById(conversation_id);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+  const isMember = await checkMemberShip(conversation_id, user_id);
+  if (!isMember) {
+    throw new ApiError(403, "You are not a member of this conversation");
+  }
+
+  const messages = await getMesssages(conversation_id);
+  return messages;
+};
+
+export { sendMessageService, getMesssagesService };
