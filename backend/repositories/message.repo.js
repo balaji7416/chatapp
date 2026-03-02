@@ -45,4 +45,38 @@ const getMesssages = async (conversation_id) => {
   return rows;
 };
 
-export { sendMessage, getMesssages };
+const getMessage = async (message_id) => {
+  const query = `
+    select * from messages
+    where id=$1
+  `;
+  const { rows } = await pool.query(query, [message_id]);
+  return rows[0];
+};
+
+const deleteMessage = async (message_id) => {
+  const query = `
+    delete from messages
+    where id=$1
+    returning id,content
+  `;
+  const { rows } = await pool.query(query, [message_id]);
+  return rows[0];
+};
+
+const isOwnerOfMessage = async (message_id, user_id) => {
+  const query = `
+    select user_id from messages 
+    where id = $1
+  `;
+  const { rows } = await pool.query(query, [message_id]);
+  return rows[0]?.user_id === user_id;
+};
+
+export {
+  sendMessage,
+  getMesssages,
+  getMessage,
+  deleteMessage,
+  isOwnerOfMessage,
+};

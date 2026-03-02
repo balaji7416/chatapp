@@ -1,6 +1,7 @@
 import {
   sendMessageService,
   getMesssagesService,
+  deleteMessageService,
 } from "../services/message.service.js";
 import ApiError from "../utils/apiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -38,4 +39,15 @@ const getMessages = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "messages fetched successfully", messages));
 });
 
-export { sendMessage, getMessages };
+const deleteMessage = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  if (!messageId) {
+    throw new ApiError(400, "message id is required");
+  }
+
+  const message = await deleteMessageService(messageId, req.user.id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "message deleted successfully", message));
+});
+export { sendMessage, getMessages, deleteMessage };

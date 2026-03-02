@@ -1,4 +1,11 @@
-import { sendMessage, getMesssages } from "../repositories/message.repo.js";
+import {
+  sendMessage,
+  getMesssages,
+  isOwnerOfMessage,
+  deleteMessage,
+  getMessage,
+} from "../repositories/message.repo.js";
+import { isAdmin } from "../repositories/conversation.member.repo.js";
 import { findConversationById } from "../repositories/conversation.repo.js";
 import { checkMemberShip } from "../repositories/conversation.repo.js";
 import ApiError from "../utils/apiError.js";
@@ -56,4 +63,20 @@ const getMesssagesService = async (conversation_id, user_id) => {
   return messages;
 };
 
-export { sendMessageService, getMesssagesService };
+const deleteMessageService = async (message_id, user_id) => {
+  const message = await getMessage(message_id);
+  if (!message) {
+    throw new ApiError(404, "Message not found");
+  }
+  const conversation_id = message?.conversation_id;
+  const isOwner = await isOwnerOfMessage(message_id, user_id);
+  const is_admin = await isAdmin(conversation_id, user_id);
+  if (!isOwner && !is_admin) {
+    throw new ApiError(403, "You are not the owner of this message");
+  }
+
+  const result = await deleteMessage(message_id);
+  return result;
+};
+
+export { sendMessageService, getMesssagesService, deleteMessageService };

@@ -12,11 +12,16 @@ where cm.role = 'admin';
 -- where c.name ilike '%an%';
 
 --get all uses
-select id, username from users;
+select id, email, username from users;
 
 --get all conversations
 SELECT id,name from conversations;
 
-select u.username as message_sent_by, c.name as conversation_name, m.content as message_content
-from users u inner join messages m on u.id = m.user_id
+-- select u.username as message_sent_by, c.name as conversation_name, m.content as message_content
+-- from users u inner join messages m on u.id = m.user_id
+-- inner join conversations c on m.conversation_id = c.id;
+
+--get messages
+select u.username as sent_by, c.name as conversation_name, m.content as message_content 
+from users u inner join messages m on u.id = m.user_id 
 inner join conversations c on m.conversation_id = c.id;
