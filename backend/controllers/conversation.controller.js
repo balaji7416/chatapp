@@ -13,26 +13,24 @@ import ApiError from "../utils/apiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const createConversation = asyncHandler(async (req, res) => {
-  const { name, isGroup, members } = req.body;
+  const { name, members, isGroup } = req.body;
+  const currentUser = req.user.id;
+  const grpMembers = [...new Set([...members, currentUser])];
 
-  if (!name && isGroup) {
+  if (isGroup && !name) {
     throw new ApiError(400, "group chat requires a name");
   }
-
-  const uniqueMembers = [...new Set([req.user.id, ...members])];
-  if (uniqueMembers.length < 2) {
-    const errMsg =
-      uniqueMembers.length === 1
-        ? "cannot create chat with yourself"
-        : "chat requires at least 2 different members";
-    throw new ApiError(400, errMsg);
+  if (!isGroup && grpMembers.length > 2) {
+    throw new ApiError(
+      400,
+      "one to one chat can only have two members, create a group chat instead",
+    );
   }
-
   const conversation = await createConversationService(
     name,
     isGroup,
-    req.user.id,
-    uniqueMembers,
+    currentUser,
+    grpMembers,
   );
   return res
     .status(201)

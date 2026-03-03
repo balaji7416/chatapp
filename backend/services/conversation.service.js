@@ -57,9 +57,10 @@ const createConversationService = async (name, isGroup, createdBy, members) => {
     return the existing conversation if there is
   */
   if (!isGroup) {
+    const otherMember = members[0] === createdBy ? members[1] : members[0];
     const existing_conversation = await findOneToOneConversation(
       createdBy,
-      members[0],
+      otherMember,
     );
     if (existing_conversation) {
       return existing_conversation;
