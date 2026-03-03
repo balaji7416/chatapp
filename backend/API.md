@@ -102,9 +102,14 @@
   - **Auth**: required + must be conversation member
   - Returns: array of messages
 
-**DELETE /api/messages/:messageId**
+- **DELETE /api/messages/:messageId**
+  - Delete message
+  - URL params: `messageId`
+  - **Auth**: required + must be owner of message or admin of conversation
+  - Returns: {id, content}
 
-- Delete message
-- URL params: `messageId`
-- **Auth**: required + must be owner of message or admin of conversation
-- Returns: {id, content}
+- **POST /api/messages/:conversationId/read**
+  - marks messages of conversation as read, updates the last_read_message of user for that conversation
+  - URL params: `conversationId`
+  - **Auth**: required + must be a member
+  - Returns : conversation member obj

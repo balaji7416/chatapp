@@ -73,10 +73,31 @@ const isOwnerOfMessage = async (message_id, user_id) => {
   return rows[0]?.user_id === user_id;
 };
 
+const markMessagesAsRead = async (conversation_id, user_id) => {
+  const queryToGetLastMessage = `
+    select last_message_id from conversations
+    where id = 
+  `;
+  const query = `
+    update conversation_members
+    set last_read_message_id = (
+        select last_message_id 
+        from conversations
+        where id = $1
+    ) 
+    where conversation_id = $1
+    and user_id = $2
+    returning *
+  `;
+  const { rows } = await pool.query(query, [conversation_id, user_id]);
+  return rows[0];
+};
+
 export {
   sendMessage,
   getMesssages,
   getMessage,
   deleteMessage,
   isOwnerOfMessage,
+  markMessagesAsRead,
 };

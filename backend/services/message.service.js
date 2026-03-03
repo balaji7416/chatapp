@@ -4,6 +4,7 @@ import {
   isOwnerOfMessage,
   deleteMessage,
   getMessage,
+  markMessagesAsRead,
 } from "../repositories/message.repo.js";
 import { isAdmin } from "../repositories/conversation.member.repo.js";
 import { findConversationById } from "../repositories/conversation.repo.js";
@@ -78,5 +79,23 @@ const deleteMessageService = async (message_id, user_id) => {
   const result = await deleteMessage(message_id);
   return result;
 };
+const markMessagesAsReadService = async (conversation_id, user_id) => {
+  const conversation = await findConversationById(conversation_id);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
 
-export { sendMessageService, getMesssagesService, deleteMessageService };
+  const isMember = await checkMemberShip(conversation_id, user_id);
+  if (!isMember) {
+    throw new ApiError(403, "You are not a member of this conversation");
+  }
+
+  const result = await markMessagesAsRead(conversation_id, user_id);
+  return result;
+};
+export {
+  sendMessageService,
+  getMesssagesService,
+  deleteMessageService,
+  markMessagesAsReadService,
+};
