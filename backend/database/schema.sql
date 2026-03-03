@@ -30,7 +30,7 @@ create table
         name varchar(100) default null, --nullable for 1-on-1 DMs
         is_group boolean default FALSE, -- false for 1-on-1 DMs
         created_by uuid references users (id) on delete set null,
-        last_message_id uuid, --foreign key added after messages table, (for showing last message to all group members)
+        last_message_id uuid,  -- add foreign key after messages table (for showing last message to all group members)
         last_message_at timestamp default current_timestamp,
         created_at timestamp default current_timestamp,
         updated_at timestamp default current_timestamp
@@ -44,7 +44,7 @@ create table
         user_id uuid references users (id) on delete cascade,
         role varchar(30) default 'member', --'admin', 'member'
         unread_count int default 0, --for notification badges 
-        last_read_message_id uuid, -- for tracking unread messages
+        last_read_message_id uuid ,-- for tracking unread messages
         is_muted boolean default false,
         joined_at timestamp default current_timestamp,
         primary key (conversation_id, user_id)
@@ -65,4 +65,86 @@ create table
         created_at timestamp default current_timestamp,
         updated_at timestamp default current_timestamp
     );
+
+--foreign key constraints
+alter table conversations
+add constraint fk_last_message 
+foreign key (last_message_id) references messages(id) on delete set null;
+
+alter table conversation_members
+add constraint fk_last_read_message
+foreign key (last_read_message_id) references messages(id) on delete set null;
+
+----Triggers
+
+--update timestamps for update_column trigger
+create or replace function update_updated_at_column() 
+returns trigger as $$
+begin 
+    new.updated_at = current_timestamp;
+    return new;
+end;
+$$ language 'plpgsql';
+
+--add trigger to users 
+create or replace trigger tr_update_updated_at_column
+before update on users
+for each row 
+execute function update_updated_at_column();
+
+--add trigger to conversations
+create or replace trigger tr_update_updated_at_column
+before update on conversations
+for each row 
+execute function update_updated_at_column();
+
+--add trigger to messages
+create or replace trigger tr_update_updated_at_column
+before update on messages
+for each row 
+execute function update_updated_at_column();
+
+
+-- new message trigger
+create or replace function process_new_message()
+returns trigger as $$
+begin
+    -- update conversation 
+    update conversations 
+    set last_message_id = new.id, last_message_at = new.created_at
+    where id = new.conversation_id;
+
+    -- Increment unread_count for everyone EXCEPT the sender
+    update conversation_members
+    set unread_count = unread_count + 1
+    where conversation_id = new.conversation_id and user_id !=new.user_id;
+
+    return new;
+end;
+$$ language 'plpgsql';
+
+--add trigger to messages
+create or replace trigger tr_process_new_message
+after insert on messages
+for each row 
+execute function process_new_message();
+
+--mark as read trigger (reset unread_count to 0)
+create or replace function reset_unread_count()
+returns trigger as $$
+begin 
+    -- only update unread_count if the last_read_message_id has changed
+    if(new.last_read_message_id is distinct from old.last_read_message_id) then 
+        new.unread_count = 0;
+    end if;
+
+    return new;
+end;
+$$ language 'plpgsql';
+
+--add trigger to conversation_members
+create or replace trigger tr_reset_unread_count
+before update on conversation_members
+for each row 
+execute function reset_unread_count();
 

@@ -15,7 +15,8 @@ where cm.role = 'admin';
 select id, email, username from users;
 
 --get all conversations
-SELECT id,name from conversations;
+SELECT c.id,c.name, m.content as last_message from conversations c
+inner join messages m on c.last_message_id = m.id;
 
 -- select u.username as message_sent_by, c.name as conversation_name, m.content as message_content
 -- from users u inner join messages m on u.id = m.user_id
@@ -25,3 +26,14 @@ SELECT id,name from conversations;
 select u.username as sent_by, c.name as conversation_name, m.content as message_content 
 from users u inner join messages m on u.id = m.user_id 
 inner join conversations c on m.conversation_id = c.id;
+
+--get conversation members with thier unread_counts
+select u.username as username, c.name as conversation_name, cm.unread_count as unread_count
+from users u inner join conversation_members cm on u.id = cm.user_id
+inner join conversations c on cm.conversation_id = c.id
+order by username, c.name;
+
+select u.username as username, c.name as conversation_name
+from users u inner join conversation_members cm on 
+u.id = cm.user_id
+inner join conversations c on cm.conversation_id = c.id
