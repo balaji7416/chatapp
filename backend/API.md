@@ -1,5 +1,7 @@
 # API Endpoints
 
+# REST
+
 > **NOTE**: All response data is wrapped in a `data` field.
 > Example: `res.data.user` or `res.data.refresh_token`
 > response object - `{status,message,data: {}}`
@@ -113,3 +115,45 @@
   - URL params: `conversationId`
   - **Auth**: required + must be a member
   - Returns : conversation member obj
+
+---
+
+# SOCKET
+
+> **NOTE**:
+> **Error Format**
+> {
+
+    success: false,
+    event: string,      // Which event caused error
+    code: string,       // e.g., "UNAUTHORIZED"
+    statusCode: number, // 401, 400, 500
+    message: string,
+    timestamp: string
+
+}
+
+> **Response Format**
+> {
+
+    success: true,
+    event: string,
+    message: string,
+    data: any,
+    timestamp: string
+
+}
+
+## AUTH
+
+- **Server emitting events**
+  - `server:session_expired` - when access token expires
+  - `connect_error` - on auth failure (invalid/missing token)
+
+- **Client connection**
+
+```javascript
+const socket = io("http://localhost:5000", {
+  auth: { token: "JWT_ACCESS_TOKEN" },
+});
+```
