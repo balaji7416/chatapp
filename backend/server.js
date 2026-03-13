@@ -1,13 +1,18 @@
 import app from "./app.js";
 import dotnev from "dotenv";
 import pool from "./config/db.js";
-
+import initializeSocket from "./socket/index.js";
+import { createServer } from "http";
 dotnev.config();
 const port = process.env.PORT || 3000;
 
 try {
-  await pool.query("SELECT 1");
-  app.listen(port, () => {
+  const server = createServer(app);
+  const io = initializeSocket(server);
+
+  console.log("Socket initialized");
+
+  server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
 } catch (err) {

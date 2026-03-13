@@ -7,6 +7,9 @@ import authRouter from "./routes/auth.routes.js";
 import conversationRouter from "./routes/conversation.routes.js";
 import messageRouter from "./routes/message.routes.js";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
 //middleware
 import globalErrorHandler from "./middleware/global.error.middleware.js";
 
@@ -22,6 +25,15 @@ app.use(
 //body parser
 app.use(express.json());
 app.use(cookieParser());
+
+//static files for socket.io testing
+// const __filenamePath = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filenamePath);
+// const file = path.join(__dirname, "public/index.html");
+// app.use(express.static("public"));
+// app.use("/", (req, res) => {
+//   res.sendFile(file);
+// });
 
 //mount routers
 app.use("/api/auth", authRouter);
