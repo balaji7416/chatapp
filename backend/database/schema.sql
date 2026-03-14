@@ -66,6 +66,18 @@ create table
         updated_at timestamp default current_timestamp
     );
 
+-- user sessions table
+create table user_sessions (
+    id uuid primary key default uuid_generate_v4 (),
+    user_id uuid references users(id) on delete cascade,
+    socket_id text not null unique, 
+    connected_at timestamp default current_timestamp,
+    last_activity timestamp default current_timestamp,
+    user_agent text, --tells about clients device and browser
+    ip_address text,
+    is_active boolean default true 
+);
+
 --foreign key constraints
 alter table conversations
 add constraint fk_last_message 
@@ -148,3 +160,35 @@ before update on conversation_members
 for each row 
 execute function reset_unread_count();
 
+
+--trigger to user_sessions to update user_status, last_activity
+create or replace function handle_user_sessions()
+returns trigger as $$
+begin
+    if TG_OP = 'INSERT' then
+    -- when session is created, set user_status = online
+        update users
+        set status = 'online', last_seen = current_timestamp
+        where id = new.user_id;
+        return new;
+    end if;
+
+    if TG_OP = 'DELETE' then
+    -- when session is deleted and there's no other sessions,
+    -- set user_status = offline
+        if not exists(select 1 from user_sessions where user_id = old.user_id and id != old.id) then
+            update users 
+            set status = 'offline', last_seen = current_timestamp
+            where id = old.user_id;
+        end if;
+        return old;
+    end if;
+
+    return null;
+end;
+$$ language 'plpgsql';
+
+create or replace trigger tr_handle_user_sessions
+after insert or delete on user_sessions
+for each row
+execute function handle_user_sessions();

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { findUserById } from "../../repositories/user.repo.js";
 import { OUTGOING, INTERNAL } from "../constants/events.js";
 dotenv.config();
+import { removeSession } from "../../services/session.service.js";
 
 const authMiddleware = async (socket, next) => {
   try {
@@ -47,8 +48,14 @@ const authMiddleware = async (socket, next) => {
     }, reamainTime);
 
     //clear timer on disconnect
-    socket.on(INTERNAL.DISCONNECT, () => {
+    socket.on(INTERNAL.DISCONNECT, async () => {
       clearTimeout(disconnectTimer);
+      try {
+        await removeSession(user.id);
+        console.log(`session expired, Removed session for ${user.username}`);
+      } catch (err) {
+        console.log("Error removing session: from auth middleware -- ", err);
+      }
     });
 
     next();
