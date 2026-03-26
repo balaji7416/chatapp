@@ -18,6 +18,11 @@ const app = express();
 // cross origin resource sharing
 app.use(
   cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps or curl requests)
+      // or perfectly mirror the origin back to the client
+      callback(null, origin || true);
+    },
     credentials: true,
   }),
 );

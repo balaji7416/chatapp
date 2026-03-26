@@ -5,6 +5,7 @@ import {
   deleteMessage,
   getMessage,
   markMessagesAsRead,
+  getMessageReadReceipts,
 } from "../repositories/message.repo.js";
 import { isAdmin } from "../repositories/conversation.member.repo.js";
 import { findConversationById } from "../repositories/conversation.repo.js";
@@ -93,9 +94,22 @@ const markMessagesAsReadService = async (conversation_id, user_id) => {
   const result = await markMessagesAsRead(conversation_id, user_id);
   return result;
 };
+
+const getMessageReadReceiptsService = async (msg_id, conv_id) => {
+  //check if conversation exists
+  const conversation = await findConversationById(conv_id);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+
+  const result = await getMessageReadReceipts(msg_id, conv_id);
+  return result;
+};
+
 export {
   sendMessageService,
   getMesssagesService,
   deleteMessageService,
   markMessagesAsReadService,
+  getMessageReadReceiptsService,
 };

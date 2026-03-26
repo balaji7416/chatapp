@@ -104,6 +104,13 @@
   - **Auth**: required + must be conversation member
   - Returns: array of messages
 
+- **GET /api/messages/:messageId/read-receipts/?conversationId="conversation_id"**
+  - Get message read receipts
+  - URL params: messageId
+  - Query params: conversationId
+  - **Auth**: required
+  - Returns: conversation members (who read the message)
+
 - **DELETE /api/messages/:messageId**
   - Delete message
   - URL params: `messageId`

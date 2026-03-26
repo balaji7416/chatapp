@@ -11,32 +11,33 @@
 -- -- inner join conversations c on cm.conversation_id = c.id 
 -- -- where c.name ilike '%an%';
 
--- --get all uses
--- select id, email, username from users;
+-- --get all users
+select id, email, username from users;
 
--- --get all conversations
--- SELECT c.id,c.name, m.content as last_message from conversations c
--- inner join messages m on c.last_message_id = m.id;
+--get all conversations
+SELECT c.id,c.name, m.content as last_message from conversations c
+inner join messages m on c.last_message_id = m.id;
 
--- -- select u.username as message_sent_by, c.name as conversation_name, m.content as message_content
--- -- from users u inner join messages m on u.id = m.user_id
--- -- inner join conversations c on m.conversation_id = c.id;
+select u.username as message_sent_by, c.name as conversation_name, m.content as message_content
+from users u inner join messages m on u.id = m.user_id
+inner join conversations c on m.conversation_id = c.id;
 
 -- --get messages
 -- select u.username as sent_by, c.name as conversation_name, m.content as message_content 
 -- from users u inner join messages m on u.id = m.user_id 
 -- inner join conversations c on m.conversation_id = c.id;
 
--- --get conversation members with thier unread_counts
--- select u.username as username, c.name as conversation_name, cm.unread_count as unread_count
--- from users u inner join conversation_members cm on u.id = cm.user_id
--- inner join conversations c on cm.conversation_id = c.id
--- order by username, c.name;
 
--- select u.username as username, c.name as conversation_name
--- from users u inner join conversation_members cm on 
--- u.id = cm.user_id
--- inner join conversations c on cm.conversation_id = c.id;
+--get conversation members with thier unread_counts
+select u.username as username, c.name as conversation_name, cm.unread_count as unread_count
+from users u inner join conversation_members cm on u.id = cm.user_id
+inner join conversations c on cm.conversation_id = c.id
+order by username, c.name;
+
+select u.username as username, c.name as conversation_name, c.id as conversation_id
+from users u inner join conversation_members cm on 
+u.id = cm.user_id
+inner join conversations c on cm.conversation_id = c.id;
 
 -- delete from user_sessions;
 

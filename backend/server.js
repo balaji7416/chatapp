@@ -28,4 +28,9 @@ const startServer = async () => {
   }
 };
 
-startServer();
+try {
+  startServer();
+} catch (err) {
+  console.log("Error starting the server: ", err);
+  process.exit(1);
+}

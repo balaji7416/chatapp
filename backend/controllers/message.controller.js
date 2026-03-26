@@ -3,6 +3,7 @@ import {
   getMesssagesService,
   deleteMessageService,
   markMessagesAsReadService,
+  getMessageReadReceiptsService,
 } from "../services/message.service.js";
 import ApiError from "../utils/apiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -60,4 +61,26 @@ const markMessagesAsRead = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, "messages marked as read", result));
 });
-export { sendMessage, getMessages, deleteMessage, markMessagesAsRead };
+
+const getMessageReadReceipts = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { conversationId } = req.query;
+
+  const result = await getMessageReadReceiptsService(messageId, conversationId);
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        "message read receipts fetched successfully",
+        result,
+      ),
+    );
+});
+export {
+  sendMessage,
+  getMessages,
+  deleteMessage,
+  markMessagesAsRead,
+  getMessageReadReceipts,
+};

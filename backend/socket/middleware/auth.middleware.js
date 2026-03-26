@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import SocketError from "../utils/socketError.js";
 import dotenv from "dotenv";
 import { findUserById } from "../../repositories/user.repo.js";
-import { OUTGOING, INTERNAL } from "../constants/events.js";
+import { SERVER, INTERNAL } from "../constants/events.js";
 dotenv.config();
 import { removeSession } from "../../services/session.service.js";
 
@@ -38,9 +38,9 @@ const authMiddleware = async (socket, next) => {
         `Force disconnecting ${socket.id} - User: ${user.username} - Token expired`,
       );
       socket.emit(
-        OUTGOING.SESSION_EXPIRED,
+        SERVER.SESSION_EXPIRED,
         SocketError.unauthorized(
-          OUTGOING.SESSION_EXPIRED,
+          SERVER.SESSION_EXPIRED,
           "session expired, refresh token and login again",
         ),
       );

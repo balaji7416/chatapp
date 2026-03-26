@@ -12,23 +12,36 @@ const socketHandler = (io, socket, handler, config = {}) => {
       if (typeof callback === "function") {
         callback(response);
       }
+
       if (result?.room) {
-        socket
-          .to(result.room)
-          .emit(responseEvent || `${requestEvent}:response`, response);
+        io.to(result.room).emit(
+          responseEvent || `${requestEvent}:response`,
+          response,
+        );
       } else if (!callback) {
         socket.emit(responseEvent || `${requestEvent}:response`, response);
       }
     } catch (err) {
-      const socketError =
-        err instanceof SocketError
-          ? err
-          : new SocketError(
-              requestEvent,
-              err.statusCode || 500,
-              err.message,
-              err.code || "SOCKET_ERROR",
-            );
+      let socketError;
+      if (err instanceof SocketError) {
+        socketError = err;
+      } else if (err.name === "ApiError" || err.statusCode) {
+        //convert api errors to socket errors
+        socketError = new SocketError(
+          requestEvent,
+          err.statusCode || 500,
+          err.message,
+          err.code || "SOCKET_ERROR",
+        );
+      } else {
+        //convert generic errors to socket errors
+        socketError = new SocketError(
+          requestEvent,
+          500,
+          err.message || "Internal Server Error",
+          "INTERNAL_ERROR",
+        );
+      }
       if (typeof callback === "function") {
         callback(socketError);
       } else {

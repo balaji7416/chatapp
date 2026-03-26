@@ -21,7 +21,6 @@ router.get("/", authenticate, getUserConversations); // get user conversations
 router.get("/:id/members", authenticate, getConversationMembers); //get conversation members
 
 router.delete("/:id/members/me", authenticate, leaveConversation); //leave conversation
-export default router;
 
 router.delete(
   "/:conversationId/members/:userIdToRemove",
@@ -29,3 +28,5 @@ router.delete(
   removeMember,
 );
 router.delete("/:id", authenticate, deleteConversation);
+
+export default router;

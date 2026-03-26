@@ -93,6 +93,32 @@ const markMessagesAsRead = async (conversation_id, user_id) => {
   return rows[0];
 };
 
+const getMessageReadReceipts = async (msg_id, conv_id) => {
+  const query1 = `
+    select * from conversation_members cm
+    where cm.conversation_id = $1
+    and (
+      select created_at from messages
+      where id = cm.last_read_message_id 
+    ) >= (
+     select created_at from messages
+     where id = $2
+     )
+  `;
+
+  const query2 = `
+    select cm.* from conversation_members cm 
+    join messages m_read 
+    on cm.last_read_message_id = m_read.id 
+    join messages m_target 
+    on m_target.id = $2 
+    where cm.conversation_id = $1
+    and m_read.created_at >= m_target.created_at
+  `;
+  const { rows } = await pool.query(query2, [conv_id, msg_id]);
+  return rows;
+};
+
 export {
   sendMessage,
   getMesssages,
@@ -100,4 +126,5 @@ export {
   deleteMessage,
   isOwnerOfMessage,
   markMessagesAsRead,
+  getMessageReadReceipts,
 };
