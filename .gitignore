@@ -23,5 +23,6 @@ Thumbs.db
 **/build/
 
 # Optional: Ignore frontend until ready
+/frontend_/*
 /frontend/*
 !/frontend/.gitkeep
