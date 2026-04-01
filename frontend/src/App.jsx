@@ -1,10 +1,12 @@
 import AuthPage from "./pages/auth/AuthPage.jsx";
+import MainPage from "./pages/main/MainPage.jsx";
 import { Route, Routes } from "react-router-dom";
 
 function App() {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />}></Route>
+      <Route path="/" element={<MainPage />}></Route>
       <Route
         path="*"
         element={
