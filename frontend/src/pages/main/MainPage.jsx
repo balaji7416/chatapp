@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+//import clsx from "clsx";
 
 import { useAuthStore } from "../../store/authStore";
 
@@ -9,7 +10,6 @@ import ChatArea from "./chatarea/ChatArea.jsx";
 function MainPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
   useEffect(() => {
     if (!user) {
       navigate("/auth");
@@ -19,16 +19,26 @@ function MainPage() {
   if (!user) return <div>Loading...</div>;
 
   return (
-    <div>
-      <div>
-        <Sidebar />
-        <h1>Home</h1>
-        <h1>Hello {user.username}</h1>
-        <button onClick={() => logout()}>Logout</button>
-        <ChatArea />
-      </div>
+    <div className="flex h-screen">
+      <Sidebar />
+      <ChatArea />
     </div>
   );
 }
 
+//  {/* sidebar*/}
+//       <div className="w-80 border-r flex flex-col bg-white">
+//         {/*header*/}
+//         <div className="p-4 border-b">
+//           <h1 className="text-xl font-bold">Chats</h1>
+//         </div>
+
+//         <Sidebar />
+//       </div>
+//       <div>
+//         <h1>Home</h1>
+//         <h1>Hello {user.username}</h1>
+//         <button onClick={() => logout()}>Logout</button>
+//         <ChatArea />
+//       </div>
 export default MainPage;

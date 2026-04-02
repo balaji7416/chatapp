@@ -8,9 +8,7 @@ function ConversationList() {
   const isConversationsLoading = useChatStore(
     (state) => state.isConversationsLoading,
   );
-  const setCurrentConversationId = useChatStore(
-    (state) => state.setCurrentConversationId,
-  );
+  const selectConversation = useChatStore((state) => state.selectConversation);
 
   useEffect(() => {
     fetchConversations();
@@ -25,7 +23,7 @@ function ConversationList() {
         <ConversationItem
           key={c.id}
           conversation={c}
-          onClick={() => setCurrentConversationId(c.id)}
+          onClick={() => selectConversation(c.id)}
         />
       ))}
     </div>
