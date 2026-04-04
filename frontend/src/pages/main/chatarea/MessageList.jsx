@@ -1,11 +1,19 @@
 import { useEffect, useRef } from "react";
+import { SERVER } from "../../../lib/events.js";
+
 import { useChatStore, useCurrentMessages } from "../../../store/chatStore.js";
+import { useSocketStore } from "../../../store/socketStore.js";
+
 import MessageBubble from "./MessageBubble.jsx";
 
 function MessageList() {
   const isMessagesLoading = useChatStore((state) => state.isMessagesLoading);
   const currentConvId = useChatStore((state) => state.currentConversationId);
   const fetchMessages = useChatStore((state) => state.fetchMessages);
+  const addMessage = useChatStore((state) => state.addMessage);
+
+  const on = useSocketStore((state) => state.on);
+  const isConnected = useSocketStore((state) => state.isConnected);
 
   const msgsEndRef = useRef(null);
 
@@ -21,6 +29,25 @@ function MessageList() {
   useEffect(() => {
     msgsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // mount handlers for socket events
+  useEffect(() => {
+    if (!isConnected) {
+      console.log("socket not connected, skipping socket events mount");
+      return;
+    }
+    const onMessage = (res) => {
+      //console.log(res);
+      const message = res.data;
+      const conversationId = message?.conversation_id;
+      addMessage(conversationId, message);
+    };
+    const cleanup = on(SERVER.NEW_MESSAGE, onMessage);
+
+    return () => {
+      cleanup();
+    };
+  }, [on, addMessage, isConnected]);
 
   if (!currentConvId)
     return (

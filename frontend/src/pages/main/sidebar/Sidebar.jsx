@@ -7,9 +7,9 @@ function Sidebar() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const resetChat = useChatStore((state) => state.reset);
-  const handleLogout = () => {
+  const handleLogout = async () => {
     resetChat();
-    logout();
+    await logout();
   };
   return (
     <div className="w-80 border-r flex flex-col bg-white h-full">

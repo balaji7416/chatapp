@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 //import clsx from "clsx";
 
 import { useAuthStore } from "../../store/authStore";
+import { useSocketStore } from "../../store/socketStore.js";
 
 import Sidebar from "./sidebar/Sidebar.jsx";
 import ChatArea from "./chatarea/ChatArea.jsx";
@@ -10,11 +11,18 @@ import ChatArea from "./chatarea/ChatArea.jsx";
 function MainPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const connect = useSocketStore((state) => state.connect);
+
   useEffect(() => {
     if (!user) {
       navigate("/auth");
     }
-  }, [user, navigate]);
+  }, [user, navigate, connect]);
+
+  useEffect(() => {
+    if (!user) return;
+    connect();
+  }, [user, connect]);
 
   if (!user) return <div>Loading...</div>;
 

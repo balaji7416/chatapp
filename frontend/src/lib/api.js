@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore.js";
+import { useSocketStore } from "../store/socketStore.js";
 
 const api = axios.create({
   baseURL: "http://localhost:5000/api",
@@ -39,18 +40,20 @@ api.interceptors.response.use(
         const new_access_token = res.data.data.access_token;
         const new_refresh_token = res.data.data.refresh_token;
 
-        const { user, login } = useAuthStore.getState();
+        const { user, setLoginState } = useAuthStore.getState();
 
-        login({
+        setLoginState({
           user,
           access_token: new_access_token,
           refresh_token: new_refresh_token,
+          isAuthenticated: true,
         });
-
+        // await useSocketStore.getState().forceReconnect();
         original_request.headers.Authorization = `Bearer ${new_access_token}`;
         return api(original_request);
       } catch (e) {
         useAuthStore.getState().logout();
+        useSocketStore.getState().disconnect();
         return Promise.reject(e);
       }
     }

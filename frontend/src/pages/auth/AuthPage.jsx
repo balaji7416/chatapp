@@ -1,42 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore.js";
 
 function AuthPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
+  const user = useAuthStore((state) => state.user);
   const login = useAuthStore((state) => state.login);
+  const register = useAuthStore((state) => state.register);
+  const loading = useAuthStore((state) => state.isAuthLoading);
+  const error = useAuthStore((state) => state.authError);
+  const clearError = useAuthStore((state) => state.clearError);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      setLoading(true);
-      setError("");
-      const url = isLogin ? "/auth/login" : "/auth/register";
-      const data = isLogin
-        ? { email, password }
-        : { username, email, password };
-      const res = await api.post(url, data);
-      const { access_token, refresh_token, user } = res.data.data;
 
-      //store in zustand store
-      login({ user, access_token, refresh_token });
+    clearError();
+    const data = isLogin ? { email, password } : { username, email, password };
+    let res;
+    if (isLogin) {
+      res = await login(data);
+    } else {
+      res = await register(data);
+    }
 
-      navigate("/");
+    if (res?.success) {
       let msg = isLogin ? "Login successful" : "Registration successful";
       alert(msg);
-    } catch (err) {
-      setError(err.response.data.message);
-      console.error(err);
-    } finally {
-      setLoading(false);
+      navigate("/");
     }
   };
 
@@ -78,7 +83,7 @@ function AuthPage() {
         </p>
       </form>
       <div>
-        {error && <p>{error}</p>}
+        {error && !loading && <p>{error}</p>}
         {loading && <p>loading...</p>}
       </div>
     </div>

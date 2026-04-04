@@ -17,6 +17,10 @@ function ConversationList() {
   if (isConversationsLoading) return <div>Loading...</div>;
 
   if (conversations.length === 0) return <div>No conversations</div>;
+
+  {
+    /**/
+  }
   return (
     <div>
       {conversations.map((c) => (
