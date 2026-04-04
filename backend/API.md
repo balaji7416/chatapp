@@ -5,6 +5,7 @@
 > **NOTE**: All response data is wrapped in a `data` field.
 > Example: `res.data.user` or `res.data.refresh_token`
 > response object - `{status,message,data: {}}`
+> use res.data.data if using axios to get the required response data
 
 ## Common Status Codes
 

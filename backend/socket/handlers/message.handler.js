@@ -7,10 +7,10 @@ import {
 } from "../../services/message.service.js";
 
 const sendMessageHandler = async ({ io, socket, data }) => {
-  const { conversationId, messageContent, replyToId } = data;
+  const { conversationId, content, replyToId = null } = data;
 
   // Basic validation
-  if (!conversationId || !messageContent) {
+  if (!conversationId || !content) {
     throw new SocketError(
       CLIENT.SEND_MESSAGE,
       400,
@@ -21,14 +21,14 @@ const sendMessageHandler = async ({ io, socket, data }) => {
 
   const message = await sendMessageService(
     conversationId,
-    messageContent,
+    content,
     replyToId,
     socket.user.id,
   );
 
   return {
     room: `conversation:${conversationId}`,
-    data: message,
+    ...message,
   };
 };
 
@@ -49,7 +49,8 @@ const deleteMessageHandler = async ({ io, socket, data }) => {
 
   return {
     room: `conversation:${conversationId}`,
-    data: { id: messageId, message: "message deleted" },
+    id: messageId,
+    message: "message deleted",
   };
 };
 
@@ -65,12 +66,11 @@ const markMessageAsRead = async ({ io, socket, data }) => {
 
   return {
     room: `conversation:${conversationId}`,
-    data: {
-      id: conversationId,
-      conversationId: conversationId,
-      userId: socket?.user?.id,
-      message: "messages marked as read",
-    },
+
+    id: conversationId,
+    conversationId: conversationId,
+    userId: socket?.user?.id,
+    message: "messages marked as read",
   };
 };
 
@@ -79,11 +79,10 @@ const typingStartHandler = async ({ io, socket, data }) => {
 
   return {
     room: `conversation:${conversationId}`,
-    data: {
-      conversationId: conversationId,
-      userId: socket?.user?.id,
-      message: "started typing",
-    },
+
+    conversationId: conversationId,
+    userId: socket?.user?.id,
+    message: "started typing",
   };
 };
 
@@ -91,11 +90,9 @@ const typingStopHandler = async ({ io, socket, data }) => {
   const { conversationId } = data;
   return {
     room: `conversation:${conversationId}`,
-    data: {
-      conversationId: conversationId,
-      userId: socket?.user?.id,
-      message: "stopped typing",
-    },
+    conversationId: conversationId,
+    userId: socket?.user?.id,
+    message: "stopped typing",
   };
 };
 

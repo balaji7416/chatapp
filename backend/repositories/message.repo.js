@@ -39,7 +39,7 @@ const getMesssages = async (conversation_id) => {
         inner join users u on m.user_id = u.id
         inner join conversations c on m.conversation_id = c.id
         where conversation_id = $1
-        order by created_at desc
+        order by created_at asc
         `;
   const { rows } = await pool.query(query, [conversation_id]);
   return rows;
