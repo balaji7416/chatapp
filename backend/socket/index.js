@@ -28,10 +28,13 @@ const initializeSocket = (server) => {
     );
 
     //on connection
-    socketHandler(io, socket, connectionHandler, {
-      requestEvent: INTERNAL.CONNECTION,
-      responseEvent: "server:connection:response",
-    })();
+    socket.on(
+      INTERNAL.CONNECTION,
+      socketHandler(io, socket, connectionHandler, {
+        requestEvent: INTERNAL.CONNECTION,
+        responseEvent: "server:connection:response",
+      }),
+    );
 
     //message handlers
 

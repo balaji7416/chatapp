@@ -14,10 +14,25 @@ import {
   isAdmin,
   leaveConversation,
 } from "../repositories/conversation.member.repo.js";
-import { findUserById } from "../repositories/user.repo.js";
+import { findUserById, findUserByUsername } from "../repositories/user.repo.js";
 import ApiError from "../utils/apiError.js";
 
-const createConversationService = async (name, isGroup, createdBy, members) => {
+const createConversationService = async (
+  name,
+  isGroup,
+  createdBy, //user id
+  members_usernames,
+) => {
+  // let user create conversion by username instead of id, as username is realistic in the real world
+  //convert all the usernames to ids
+
+  const members = [];
+  members_usernames.forEach(async (username) => {
+    const user = await findUserByUsername(username);
+    console.log(user);
+    members.push(user?.id);
+  });
+
   // check if user id is valid
   if (!uuidValidate(createdBy)) {
     throw new ApiError(400, "Invalid user id");
@@ -74,6 +89,22 @@ const createConversationService = async (name, isGroup, createdBy, members) => {
     members,
   );
   return conversation;
+};
+
+const joinConversationService = async (conversation_id, user_id) => {
+  const conversation = await findConversationById(conversation_id);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+  const user = await findUserById(user_id);
+  if (!user) throw new ApiError(400, "User does not exist");
+
+  const isAlreadyMember = await checkMemberShip(conversation_id, user_id);
+  if (isAlreadyMember)
+    throw new ApiError(400, "User is already a member of this conversation");
+
+  const res = await addMember(conversation_id, user_id);
+  return res;
 };
 
 const getConversationByIdService = async (conversationId, userId) => {
@@ -259,6 +290,7 @@ const deleteConversationService = async (conversationId, userId) => {
 
 export {
   createConversationService,
+  joinConversationService,
   getConversationByIdService,
   getUserConversationsService,
   getConversationMembersService,
