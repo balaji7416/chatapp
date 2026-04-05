@@ -49,6 +49,12 @@
   - **Auth**: required
   - Returns: conversation object
 
+- **POST /api/conversations/:conversationId/join**
+  - Join a conversation
+  - URL params: conversationId
+  - **AUTH**: required
+  - returns {conversation obj in data field of res}
+
 - **POST /api/conversations/:conversationId/members/:userIdToAdd**
   - Add member to conversation
   - URL params: conversationId, userIdToAdd

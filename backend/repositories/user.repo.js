@@ -7,6 +7,14 @@ const findUserByEmail = async (email) => {
   return rows[0];
 };
 
+const findUserByUsername = async (username) => {
+  const query = `
+    select * from users where username = $1 and deleted_at is null
+   `;
+  const { rows } = await pool.query(query, [username]);
+  return rows[0];
+};
+
 const findUserById = async (id) => {
   const query = `
         select * from users where id = $1 and deleted_at is null
@@ -47,6 +55,7 @@ const updateRefreshToken = async (id, refresh_token) => {
 
 export {
   findUserByEmail,
+  findUserByUsername,
   findUserById,
   findUserByToken,
   createUser,

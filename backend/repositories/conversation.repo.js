@@ -51,6 +51,16 @@ const createConversation = async (name, isGroup, createdBy, members) => {
   }
 };
 
+const joinConversation = async (conversation_id, user_id) => {
+  const query = `
+    insert into conversation_members(conversation_id,user_id)
+    values ($1, $2)
+    returning *
+  `;
+  const { rows } = await pool.query(query, [conversation_id, user_id]);
+  return rows[0];
+};
+
 //find a one-one conversation between two users
 const findOneToOneConversation = async (user1Id, user2Id) => {
   const query = `
@@ -117,6 +127,7 @@ const deleteConversation = async (conversation_id) => {
 
 export {
   createConversation,
+  joinConversation,
   findConversationById,
   findUserConversations,
   findOneToOneConversation,
