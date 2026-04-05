@@ -12,17 +12,20 @@ function MainPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const connect = useSocketStore((state) => state.connect);
+  const isSocketConnected = useSocketStore((state) => state.isConnected);
 
   useEffect(() => {
     if (!user) {
       navigate("/auth");
     }
-  }, [user, navigate, connect]);
+  }, [user, navigate]);
 
+  //if user token is refreshed, but socket is not reconnected
   useEffect(() => {
-    if (!user) return;
-    connect();
-  }, [user, connect]);
+    if (user && !isSocketConnected) {
+      connect();
+    }
+  }, [user, isSocketConnected, connect]);
 
   if (!user) return <div>Loading...</div>;
 
@@ -34,19 +37,4 @@ function MainPage() {
   );
 }
 
-//  {/* sidebar*/}
-//       <div className="w-80 border-r flex flex-col bg-white">
-//         {/*header*/}
-//         <div className="p-4 border-b">
-//           <h1 className="text-xl font-bold">Chats</h1>
-//         </div>
-
-//         <Sidebar />
-//       </div>
-//       <div>
-//         <h1>Home</h1>
-//         <h1>Hello {user.username}</h1>
-//         <button onClick={() => logout()}>Logout</button>
-//         <ChatArea />
-//       </div>
 export default MainPage;

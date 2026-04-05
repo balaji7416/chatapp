@@ -1,5 +1,5 @@
 function ConversationItem({ conversation, onClick }) {
-  console.log(conversation);
+  // console.log(conversation);
   return <div onClick={onClick}>{conversation.name}</div>;
 }
 

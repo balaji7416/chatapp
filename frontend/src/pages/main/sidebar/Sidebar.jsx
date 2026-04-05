@@ -1,9 +1,15 @@
 import ConversationList from "./ConversationList.jsx";
+import CreateChat from "./CreateChat.jsx";
+import NavigationPanel from "./NavigationPanel.jsx";
 import { useAuthStore } from "../../../store/authStore.js";
 import { useChatStore } from "../../../store/chatStore.js";
-import clsx from "clsx";
+// import clsx from "clsx";
+import { useState } from "react";
 
 function Sidebar() {
+  const [openOptions, setOpenOptions] = useState(false);
+  const [view, setView] = useState("chats");
+
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const resetChat = useChatStore((state) => state.reset);
@@ -18,15 +24,37 @@ function Sidebar() {
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">{user.username}</span>
           <button
-            onClick={handleLogout}
-            className={clsx("text-xs bg-red-500 text-white px-2 py-1 rounded")}
+            // onClick={handleLogout}
+            // className={clsx("text-xs bg-red-500 text-white px-2 py-1 rounded")}
+            onClick={() => setOpenOptions((prev) => !prev)}
           >
-            Logout
+            * *
           </button>
+          {openOptions && (
+            <NavigationPanel
+              onLogout={() => {
+                setOpenOptions(false);
+                handleLogout();
+              }}
+              onChatsClick={() => {
+                setOpenOptions(false);
+                setView("chats");
+              }}
+              onCreateChatClick={() => {
+                setOpenOptions(false);
+                setView("create");
+              }}
+              onJoinChatClick={() => {
+                setOpenOptions(false);
+                setView("join");
+              }}
+            />
+          )}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto">
-        <ConversationList />
+        {view === "chats" && <ConversationList />}
+        {view === "create" && <CreateChat />}
       </div>
     </div>
   );
