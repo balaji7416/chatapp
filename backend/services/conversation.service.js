@@ -62,6 +62,22 @@ const createConversationService = async (
   return conversation;
 };
 
+const joinConversationService = async (conversation_id, user_id) => {
+  const conversation = await findConversationById(conversation_id);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+  const user = await findUserById(user_id);
+  if (!user) throw new ApiError(400, "User does not exist");
+
+  const isAlreadyMember = await checkMemberShip(conversation_id, user_id);
+  if (isAlreadyMember)
+    throw new ApiError(400, "User is already a member of this conversation");
+
+  const res = await addMember(conversation_id, user_id);
+  return res;
+};
+
 const getConversationByIdService = async (conversationId, userId) => {
   // check the user has access to the conversation
   const hasAccess = await checkMemberShip(conversationId, userId);
@@ -245,6 +261,7 @@ const deleteConversationService = async (conversationId, userId) => {
 
 export {
   createConversationService,
+  joinConversationService,
   getConversationByIdService,
   getUserConversationsService,
   getConversationMembersService,

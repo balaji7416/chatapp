@@ -7,6 +7,7 @@ import {
   removeMemberService,
   leaveConversationService,
   deleteConversationService,
+  joinConversationService,
 } from "../services/conversation.service.js";
 import ApiResponse from "../utils/apiResponse.js";
 import ApiError from "../utils/apiError.js";
@@ -27,7 +28,7 @@ const createConversation = asyncHandler(async (req, res) => {
   const conversation = await createConversationService(
     name,
     isGroup,
-    currentUser,
+    req.user.id,
     grpMembers,
   );
   return res
@@ -35,6 +36,15 @@ const createConversation = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(201, "conversation created successfully", conversation),
     );
+});
+
+const joinConversation = asyncHandler(async (req, res) => {
+  const { conversationId } = req.params;
+
+  const conv = await joinConversationService(conversationId, req?.user?.id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "conversation joined successfully", conv));
 });
 
 const getConversationById = asyncHandler(async (req, res) => {
@@ -142,6 +152,7 @@ const deleteConversation = asyncHandler(async (req, res) => {
 
 export {
   createConversation,
+  joinConversation,
   getConversationById,
   getUserConversations,
   getConversationMembers,
