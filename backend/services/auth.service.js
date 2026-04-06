@@ -67,13 +67,12 @@ const loginUserService = async (email, password) => {
 };
 
 //logout user
-const logoutUserService = async (id) => {
+const logoutUserService = async (refreshToken) => {
   //check if use is logged in
-  const user = await findUserById(id);
-  if (user.refresh_token === null) {
-    throw new ApiError(400, "User already logged out");
+  const user = await findUserByToken(refreshToken);
+  if (user) {
+    await updateRefreshToken(user?.id, null);
   }
-  await updateRefreshToken(id, null);
 };
 
 const refreshAccessTokenService = async (token) => {
