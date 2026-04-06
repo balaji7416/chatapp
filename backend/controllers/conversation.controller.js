@@ -28,7 +28,7 @@ const createConversation = asyncHandler(async (req, res) => {
   const conversation = await createConversationService(
     name,
     isGroup,
-    req.user.id,
+    currentUser,
     grpMembers,
   );
   return res
