@@ -98,14 +98,15 @@ const loginUser = asyncHandler(async (req, res) => {
 
 //logout
 const logOutUser = asyncHandler(async (req, res) => {
-  const { id } = req.user;
-
-  if (!id) {
-    throw new ApiError(401, "Unauthorized");
+  const refreshToken = req?.cookies.refreshToken;
+  if (!refreshToken) {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "user already logged out"));
   }
 
   //clear refreshtoken in db
-  await logoutUserService(id);
+  await logoutUserService(refreshToken);
 
   //clear cookies sent to client
   res.clearCookie("refreshToken");
