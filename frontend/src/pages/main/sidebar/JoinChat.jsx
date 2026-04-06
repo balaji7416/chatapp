@@ -33,6 +33,17 @@ function JoinChat() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    try {
+      const res = await api.post(`/conversations/${chatId}/join`, { chatId });
+      showToast(res.data.message, "success");
+      setChatId("");
+    } catch (err) {
+      console.error("Error in joining chat", err);
+      const msg = err.response?.data?.message || err.message || "Unknown error";
+      showToast(msg, "error");
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div>
@@ -47,6 +58,7 @@ function JoinChat() {
       </form>
       {error && <p>{error}</p>}
       {success && <p>{success}</p>}
+      {loading && <p>joining...</p>}
       {info && <p>{info}</p>}
     </div>
   );
