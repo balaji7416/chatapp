@@ -14,18 +14,16 @@ import asyncHandler from "../utils/asyncHandler.js";
 
 const createConversation = asyncHandler(async (req, res) => {
   const { name, members, isGroup } = req.body;
-  const currentUser = req.user.id;
+  const currentUser = req?.user?.username;
+
+  //user names of members including current user
   const grpMembers = [...new Set([...members, currentUser])];
+  if (!isGroup) isGroup = grpMembers.length > 2; // if isGroup is not provided, set it to true if there are more than 2 members
 
   if (isGroup && !name) {
     throw new ApiError(400, "group chat requires a name");
   }
-  if (!isGroup && grpMembers.length > 2) {
-    throw new ApiError(
-      400,
-      "one to one chat can only have two members, create a group chat instead",
-    );
-  }
+
   const conversation = await createConversationService(
     name,
     isGroup,

@@ -14,44 +14,30 @@ import {
   isAdmin,
   leaveConversation,
 } from "../repositories/conversation.member.repo.js";
-import { findUserById } from "../repositories/user.repo.js";
+import { findUserById, findUserByUsername } from "../repositories/user.repo.js";
 import ApiError from "../utils/apiError.js";
 
-const createConversationService = async (name, isGroup, createdBy, members) => {
-  // check if user id is valid
-  if (!uuidValidate(createdBy)) {
-    throw new ApiError(400, "Invalid user id");
+const createConversationService = async (
+  name,
+  isGroup,
+  createdBy_name,
+  members_names,
+) => {
+  //convert usernames to id's to make it easier
+  const createdBy = await findUserByUsername(createdBy_name);
+  if (!createdBy) {
+    throw new ApiError(400, "user-You does not exist");
   }
-
-  //check if member ids are valid
-  for (const member of members) {
-    if (!uuidValidate(member)) {
-      throw new ApiError(400, `inavlid member id: ${member}`);
+  const memberPromises = members_names.map(async (member) => {
+    const user = await findUserByUsername(member);
+    if (!user) {
+      throw new ApiError(400, `user not found: ${member}`);
     }
-  }
-
-  //check if creator exists
-  const user = await findUserById(createdBy);
-  if (!user) {
-    throw new ApiError(400, "User does not exist");
-  }
-
-  //check if all memebers exist
-  const existPromises = members.map((member) => {
-    return findUserById(member);
+    return user?.id;
   });
 
-  const users = await Promise.all(existPromises);
-  const missingMembers = [];
-  for (let i = 0; i < members.length; i++) {
-    if (!users[i]) {
-      missingMembers.push(members[i]);
-    }
-  }
-
-  if (missingMembers.length > 0) {
-    throw new ApiError(400, `Users not found: ${missingMembers.join(", ")}`);
-  }
+  const members = await Promise.all(memberPromises);
+  const createdBy_id = createdBy?.id;
 
   /*check if there's already a existing conversation if it's one-one chat
     return the existing conversation if there is
@@ -70,7 +56,7 @@ const createConversationService = async (name, isGroup, createdBy, members) => {
   const conversation = await createConversation(
     name,
     isGroup,
-    createdBy,
+    createdBy_id,
     members,
   );
   return conversation;
