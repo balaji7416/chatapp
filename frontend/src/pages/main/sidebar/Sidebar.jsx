@@ -1,5 +1,6 @@
 import ConversationList from "./ConversationList.jsx";
 import CreateChat from "./CreateChat.jsx";
+import JoinChat from "./JoinChat.jsx";
 import NavigationPanel from "./NavigationPanel.jsx";
 import { useAuthStore } from "../../../store/authStore.js";
 import { useChatStore } from "../../../store/chatStore.js";
@@ -55,6 +56,7 @@ function Sidebar() {
       <div className="flex-1 overflow-y-auto">
         {view === "chats" && <ConversationList />}
         {view === "create" && <CreateChat />}
+        {view === "join" && <JoinChat />}
       </div>
     </div>
   );
