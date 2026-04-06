@@ -122,7 +122,22 @@ const useChatStore = create(
           await get().fetchMembers(conversationId);
         }
       },
+
+      leaveConversation: async (conversationId) => {
+        try {
+          await api.delete(`/conversations/${conversationId}/members/me`);
+          get().setConversations(
+            get().conversations.filter((c) => c.id !== conversationId),
+          );
+          get().setCurrentConversationId(null);
+          get().setMessages(conversationId, []);
+          get().setMembers(conversationId, []);
+        } catch (error) {
+          console.error("Error in leaving conversation: ", error);
+        }
+      },
     }),
+
     {
       name: `chat-storage`,
 

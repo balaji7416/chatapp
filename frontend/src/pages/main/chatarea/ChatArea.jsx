@@ -7,8 +7,6 @@ import { useState } from "react";
 
 function ChatArea() {
   const [view, setView] = useState("chats");
-  //const [optionsOpen, setOptionsOpen] = useState(false);
-
   const currConversationId = useChatStore(
     (state) => state.currentConversationId,
   );
@@ -22,7 +20,9 @@ function ChatArea() {
       />
       {view === "chats" && <MessageList />}
       {view === "chats" && currConversationId && <MessageInput />}
-      {view === "chatInfo" && <ChatInfo onClick={() => setView("chats")} />}
+      {view === "chatInfo" && currConversationId && (
+        <ChatInfo onClick={() => setView("chats")} />
+      )}
     </div>
   );
 }
