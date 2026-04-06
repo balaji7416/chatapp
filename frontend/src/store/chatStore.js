@@ -10,10 +10,12 @@ const useChatStore = create(
       conversations: [],
       currentConversationId: null,
       messages: {}, // {conversationId: [messages]}
+      members: {}, //{conversationId: [members]}
 
       //loading states
       isMessagesLoading: false,
       isConversationsLoading: false,
+      isMembersLoading: false,
 
       //actions
       setConversations: (conversations) => set({ conversations }),
@@ -26,6 +28,24 @@ const useChatStore = create(
               ...(state.messages[conversationId] || []),
               message,
             ],
+          },
+        })),
+      addMember: (conversationId, member) =>
+        set((state) => ({
+          members: {
+            ...state.members,
+            [conversationId]: [
+              ...(state.members[conversationId] || []),
+              member,
+            ],
+          },
+        })),
+
+      setMembers: (conversationId, members) =>
+        set((state) => ({
+          members: {
+            ...state.members,
+            [conversationId]: members,
           },
         })),
 
@@ -44,6 +64,7 @@ const useChatStore = create(
           messages: {},
           isMessagesLoading: false,
           isConversationsLoading: false,
+          members: {},
         }),
 
       //loading actions
@@ -76,12 +97,29 @@ const useChatStore = create(
         }
       },
 
+      fetchMembers: async (conversationId) => {
+        try {
+          set({ isMembersLoading: true });
+          const res = await api.get(`/conversations/${conversationId}/members`);
+          get().setMembers(conversationId, res?.data?.data);
+          console.log("Members: ", res?.data?.data);
+        } catch (error) {
+          console.error("Error in fetching members: ", error);
+        } finally {
+          set({ isMembersLoading: false });
+        }
+      },
+
       selectConversation: async (conversationId) => {
         get().setCurrentConversationId(conversationId);
 
         const msgs = get().messages[conversationId];
         if (!msgs || msgs.length === 0) {
           await get().fetchMessages(conversationId);
+        }
+        const members = get().members[conversationId];
+        if (!members || members.length === 0) {
+          await get().fetchMembers(conversationId);
         }
       },
     }),
@@ -112,4 +150,14 @@ const useCurrentConversation = () => {
   return conversations.find((c) => c.id === currConvId);
 };
 
-export { useChatStore, useCurrentMessages, useCurrentConversation };
+const useCurrentMembers = () => {
+  const currConvId = useChatStore((state) => state.currentConversationId);
+  const members = useChatStore((state) => state.members[currConvId]);
+  return members ?? [];
+};
+export {
+  useChatStore,
+  useCurrentMessages,
+  useCurrentConversation,
+  useCurrentMembers,
+};
