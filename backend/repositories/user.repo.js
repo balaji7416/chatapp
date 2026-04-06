@@ -8,9 +8,7 @@ const findUserByEmail = async (email) => {
 };
 
 const findUserByUsername = async (username) => {
-  const query = `
-    select * from users where username = $1 and deleted_at is null
-   `;
+  const query = `select * from users where username = $1 and deleted_at is null`;
   const { rows } = await pool.query(query, [username]);
   return rows[0];
 };
