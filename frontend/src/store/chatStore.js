@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import api from "../lib/api.js";
+import { useToastStore } from "./toastStore.js";
+const showSuccess = useToastStore.getState().success;
+const showError = useToastStore.getState().error;
 
 const useChatStore = create(
   persist(
@@ -126,6 +129,7 @@ const useChatStore = create(
       leaveConversation: async (conversationId) => {
         try {
           await api.delete(`/conversations/${conversationId}/members/me`);
+          showSuccess("Left conversation successfully");
           get().setConversations(
             get().conversations.filter((c) => c.id !== conversationId),
           );
@@ -133,6 +137,9 @@ const useChatStore = create(
           get().setMessages(conversationId, []);
           get().setMembers(conversationId, []);
         } catch (error) {
+          const msg =
+            error.response?.data?.message || error.message || "Unknown error";
+          showError(msg);
           console.error("Error in leaving conversation: ", error);
         }
       },

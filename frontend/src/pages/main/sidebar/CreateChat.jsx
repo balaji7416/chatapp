@@ -1,43 +1,22 @@
 import { useState } from "react";
 import api from "../../../lib/api";
-
+import { useToastStore } from "../../../store/toastStore";
 function CreateChat() {
   const [chatName, setChatName] = useState("");
   const [member, setMember] = useState("");
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [info, setInfo] = useState(false);
 
-  const showToast = (message, type, duration = 3000) => {
-    if (type === "error") {
-      setError(message);
-      setSuccess(false);
-      setTimeout(() => {
-        setError("");
-      }, duration);
-    } else if (type === "success") {
-      setSuccess(message);
-      setError("");
-      setTimeout(() => {
-        setSuccess("");
-      }, duration);
-    } else if (type === "info") {
-      setInfo(message);
-      setError("");
-      setTimeout(() => {
-        setInfo("");
-      }, duration);
-    }
-  };
+  const showSuccess = useToastStore((state) => state.success);
+  const showError = useToastStore((state) => state.error);
+  const showInfo = useToastStore((state) => state.info);
 
   const addMember = () => {
     if (!member) {
-      showToast("Member username is required", "info");
+      showInfo("Please enter a member");
     }
     if (members.includes(member)) {
-      showToast("Member already added", "error", "info");
+      showInfo("Member already added");
     }
     setMembers([...members, member]);
     setMember("");
@@ -47,7 +26,6 @@ function CreateChat() {
     setMember("");
   };
   const handleSubmit = async (e) => {
-    setError("");
     e.preventDefault();
     console.log(chatName, members);
     try {
@@ -57,8 +35,7 @@ function CreateChat() {
         isGroup: true,
         members,
       });
-      showToast("Chat created successfully", "success");
-      setError("");
+      showSuccess("Chat created successfully");
       setChatName("");
       setMembers([]);
     } catch (error) {
@@ -67,7 +44,7 @@ function CreateChat() {
         error.response?.data?.message ||
         error.message ||
         "Failed to create chat";
-      showToast(msg, "error");
+      showError(msg);
     } finally {
       setLoading(false);
     }
@@ -97,7 +74,7 @@ function CreateChat() {
           <li>You</li>
           {members.length === 0 && <li>no members</li>}
           {members.map((member) => (
-            <li>
+            <li key={member}>
               <span>{member}</span>
               <button type="button" onClick={() => removeMember(member)}>
                 remove
@@ -108,9 +85,6 @@ function CreateChat() {
         <button type="submit">create</button>
       </form>
       {loading && <div>loading...</div>}
-      {error && <div>{error}</div>}
-      {success && <div>Chat created successfully</div>}
-      {info && <div>{info}</div>}
     </div>
   );
 }
