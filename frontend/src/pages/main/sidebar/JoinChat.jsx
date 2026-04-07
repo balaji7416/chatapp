@@ -1,46 +1,24 @@
 import { useState } from "react";
 import api from "../../../lib/api";
-
+import { useChatStore } from "../../../store/chatStore";
 function JoinChat() {
   const [chatId, setChatId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [info, setInfo] = useState(false);
 
-  const showToast = (message, type, duration = 3000) => {
-    if (type === "error") {
-      setError(message);
-      setSuccess(false);
-      setTimeout(() => {
-        setError("");
-      }, duration);
-    } else if (type === "success") {
-      setSuccess(message);
-      setError("");
-      setTimeout(() => {
-        setSuccess("");
-      }, duration);
-    } else if (type === "info") {
-      setInfo(message);
-      setError("");
-      setTimeout(() => {
-        setInfo("");
-      }, duration);
-    }
-  };
+  const showError = useChatStore((state) => state.error);
+  const showSuccess = useChatStore((state) => state.success);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const res = await api.post(`/conversations/${chatId}/join`, { chatId });
-      showToast(res.data.message, "success");
+      showSuccess(res.data.message);
       setChatId("");
     } catch (err) {
       console.error("Error in joining chat", err);
       const msg = err.response?.data?.message || err.message || "Unknown error";
-      showToast(msg, "error");
+      showError(msg);
     } finally {
       setLoading(false);
     }
@@ -56,10 +34,8 @@ function JoinChat() {
         />
         <button type="submit">join</button>
       </form>
-      {error && <p>{error}</p>}
-      {success && <p>{success}</p>}
+
       {loading && <p>joining...</p>}
-      {info && <p>{info}</p>}
     </div>
   );
 }
