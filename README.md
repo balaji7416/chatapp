@@ -2,8 +2,8 @@
 
 ## Current Status
 
-**Backend: Complete** - All Core features are working
-**Frontend:** In progress (building with React + Tailwind)
+- **Backend: Complete** - All Core features are working
+- **Frontend** - In progress (building with React + Tailwind)
 
 ## Backend
 
@@ -23,6 +23,7 @@
 - Token refresh
 
 > access token - short lived (15 min)
+
 > refresh token - long lived (7d), used for refreshing access token when expired
 
 #### Conversations
@@ -87,7 +88,11 @@ psql -U postgres -d chatapp -f database/schema.sql
 npm run dev
 ```
 
-## API BASE URL: [http://localhost:5000/api](http://localhost:5000/api)
+## API BASE URL:
+
+- [http://localhost:5000/api](http://localhost:5000/api)
+
+---
 
 ## Made by:
 
