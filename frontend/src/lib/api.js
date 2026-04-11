@@ -19,14 +19,51 @@ api.interceptors.request.use(
   (err) => Promise.reject(err),
 );
 
+let isRefreshing = false;
+let queue = [];
+
+const processQueue = (token, error) => {
+  queue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  queue = [];
+};
+
 //for auto refresh on token expiry
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original_request = err.config;
 
+    //if refresh endpoint itself fails, logout
+    if (original_request.url?.includes("/auth/refresh")) {
+      console.log(`Refresh endpoint failed, logging out`);
+      useAuthStore.getState().logout();
+      useSocketStore.getState().disconnect();
+      return Promise.reject(err);
+    }
+
     if (err.response?.status === 401 && !original_request._retry) {
       original_request._retry = true;
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          queue.push({ resolve, reject });
+        })
+          .then((token) => {
+            original_request.headers.Authorization = `Bearer ${token}`;
+            return api(original_request);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      original_request._retry = true;
+      isRefreshing = true;
 
       try {
         const res = await axios.post(
@@ -48,13 +85,17 @@ api.interceptors.response.use(
           refresh_token: new_refresh_token,
           isAuthenticated: true,
         });
-        // await useSocketStore.getState().forceReconnect();
+
+        processQueue(new_access_token, null);
+        //useSocketStore.getState().forceReconnect();
         original_request.headers.Authorization = `Bearer ${new_access_token}`;
         return api(original_request);
       } catch (e) {
         useAuthStore.getState().logout();
         useSocketStore.getState().disconnect();
         return Promise.reject(e);
+      } finally {
+        isRefreshing = false;
       }
     }
     return Promise.reject(err);
