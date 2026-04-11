@@ -37,9 +37,8 @@ function MessageList() {
       return;
     }
     const onMessage = (res) => {
-      //console.log(res);
       const message = res.data;
-      const conversationId = message?.conversation_id;
+      const conversationId = message?.conversationId;
       addMessage(conversationId, message);
     };
     const cleanup = on(SERVER.NEW_MESSAGE, onMessage);

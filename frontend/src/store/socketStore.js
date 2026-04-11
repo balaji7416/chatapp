@@ -16,7 +16,7 @@ const useSocketStore = create((set, get) => ({
       return null;
     }
 
-    if (get().socket) {
+    if (get().isConnected) {
       console.log("socket already connected");
       return get().socket;
     }
@@ -30,9 +30,19 @@ const useSocketStore = create((set, get) => ({
       console.log("socket connected - ", socket.id);
       //emit to server, to join rooms
       socket.emit(INTERNAL.CONNECTION, {}, (res) => {
-        console.log("connection response: ", res);
+        if (res.success) {
+          set({ socket, isConnected: true });
+          console.log("-----------------");
+          console.log("socket connected to server: ", res.data);
+          console.log("rooms: ", res.data.conversations);
+          console.log("session: ", res?.data?.sessionId);
+          console.log("-----------------");
+        } else {
+          console.log("-----------------");
+          console.log("socket connection failed: ", res.error);
+          console.log("-----------------");
+        }
       });
-      set({ socket, isConnected: true });
     });
 
     socket.on("connect_error", (error) => {
@@ -51,6 +61,7 @@ const useSocketStore = create((set, get) => ({
     if (!socket) return;
 
     console.log("manually disconnecting socket");
+    socket.removeAllListeners();
     socket.disconnect();
     set({ isConnected: false, socket: null, connectionError: null });
   },
@@ -93,7 +104,7 @@ const useSocketStore = create((set, get) => ({
       socket.disconnect();
     }
     set({ socket: null, isConnected: false, connectionError: null });
-    await new Promise(() => setTimeout(() => 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
     get.connect();
   },
 }));

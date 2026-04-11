@@ -13,7 +13,7 @@ function MainPage() {
   const user = useAuthStore((state) => state.user);
   const connect = useSocketStore((state) => state.connect);
   const isSocketConnected = useSocketStore((state) => state.isConnected);
-
+  const access_token = useAuthStore(store => store.access_token);
   useEffect(() => {
     if (!user) {
       navigate("/auth");
@@ -22,10 +22,10 @@ function MainPage() {
 
   //if user token is refreshed, but socket is not reconnected
   useEffect(() => {
-    if (user && !isSocketConnected) {
+    if (user &&  access_token && !isSocketConnected) {
       connect();
     }
-  }, [user, isSocketConnected, connect]);
+  }, [user, access_token, isSocketConnected, connect]);
 
   if (!user) return <div>Loading...</div>;
 

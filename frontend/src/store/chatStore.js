@@ -100,6 +100,21 @@ const useChatStore = create(
         }
       },
 
+      sendMessage: async (conversationId, content) => {
+        try {
+          const res = await api.post(`/messages/${conversationId}`, {
+            messageContent: content,
+          });
+          const msg = res.data.data;
+          get().addMessage(conversationId, msg);
+          return msg;
+        } catch (error) {
+          showError("Failed to send message");
+          console.error("Error in sending message: ", error);
+          return null;
+        }
+      },
+
       fetchMembers: async (conversationId) => {
         try {
           set({ isMembersLoading: true });
