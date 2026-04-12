@@ -40,6 +40,59 @@ const sendMessageHandler = ({ io, socket, data }) => {
   };
 };
 
+const typingStartHandler = async ({ io, socket, data }) => {
+  const { conversationId, user } = data;
+  if (!conversationId) {
+    return {
+      success: false,
+      error: "conversation id is required",
+    };
+  }
+
+  socket.to(`conversation:${conversationId}`).emit(SERVER.TYPING_START, {
+    success: true,
+    data: {
+      conversationId,
+      user,
+      message: `${user?.username} started typing`,
+    },
+  });
+  return {
+    success: true,
+    data: {
+      conversationId,
+      message: "started typing",
+    },
+  };
+};
+
+const typingStopHandler = async ({ io, socket, data }) => {
+  const { conversationId, user } = data;
+  if (!conversationId) {
+    return {
+      success: false,
+      error: "conversation id is required",
+    };
+  }
+
+  socket.to(`conversation:${conversationId}`).emit(SERVER.TYPING_STOP, {
+    success: true,
+    data: {
+      conversationId,
+      user,
+      message: `${user?.username} stopped typing`,
+    },
+  });
+
+  return {
+    success: true,
+    data: {
+      conversationId,
+      message: "stopped typing",
+    },
+  };
+};
+
 const deleteMessageHandler = async ({ io, socket, data }) => {
   const { conversationId, messageId } = data;
 
@@ -79,28 +132,6 @@ const markMessageAsRead = async ({ io, socket, data }) => {
     conversationId: conversationId,
     userId: socket?.user?.id,
     message: "messages marked as read",
-  };
-};
-
-const typingStartHandler = async ({ io, socket, data }) => {
-  const { conversationId } = data;
-
-  return {
-    room: `conversation:${conversationId}`,
-
-    conversationId: conversationId,
-    userId: socket?.user?.id,
-    message: "started typing",
-  };
-};
-
-const typingStopHandler = async ({ io, socket, data }) => {
-  const { conversationId } = data;
-  return {
-    room: `conversation:${conversationId}`,
-    conversationId: conversationId,
-    userId: socket?.user?.id,
-    message: "stopped typing",
   };
 };
 

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import io from "socket.io-client";
 import { useAuthStore } from "./authStore.js";
 import { INTERNAL } from "../lib/events.js";
+
 const useSocketStore = create((set, get) => ({
   //state
   socket: null,
@@ -19,6 +20,14 @@ const useSocketStore = create((set, get) => ({
     if (get().isConnected) {
       console.log("socket already connected");
       return get().socket;
+    }
+
+    //clean up existing socket if it exists
+    if (get().socket) {
+      console.log(`cleaning up existing socket: ${get().socket.id}`);
+      get().socket.removeAllListeners();
+      get().socket.disconnect();
+      set({ socket: null, isConnected: false });
     }
 
     console.log("initializing socket");

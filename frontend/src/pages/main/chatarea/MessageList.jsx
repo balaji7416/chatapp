@@ -5,13 +5,14 @@ import { useChatStore, useCurrentMessages } from "../../../store/chatStore.js";
 import { useSocketStore } from "../../../store/socketStore.js";
 
 import MessageBubble from "./MessageBubble.jsx";
-
+import TypingIndicator from "../../../components/chatarea/TypingIndicator.jsx";
 function MessageList() {
   const isMessagesLoading = useChatStore((state) => state.isMessagesLoading);
   const currentConvId = useChatStore((state) => state.currentConversationId);
   const fetchMessages = useChatStore((state) => state.fetchMessages);
   const addMessage = useChatStore((state) => state.addMessage);
-
+  const addTypingUser = useChatStore((state) => state.addTypingUser);
+  const removeTypingUser = useChatStore((state) => state.removeTypingUser);
   const on = useSocketStore((state) => state.on);
   const isConnected = useSocketStore((state) => state.isConnected);
 
@@ -41,13 +42,42 @@ function MessageList() {
       const conversationId = message?.conversationId;
       addMessage(conversationId, message);
     };
-    const cleanup = on(SERVER.NEW_MESSAGE, onMessage);
+    const onTypingStart = ({ data }) => {
+      if (data.conversationId === currentConvId && data.user) {
+        console.log(`${data.user?.username} started typing`);
+        addTypingUser(data.conversationId, data.user);
+      }
 
-    return () => {
-      cleanup();
+      //auto remove typing user after 3 seconds (if stop event not received)
+      setTimeout(() => {
+        removeTypingUser(data.conversationId, data.user?.id);
+      }, 3000);
     };
-  }, [on, addMessage, isConnected]);
 
+    const onTypingStop = ({ data }) => {
+      if (data.conversationId === currentConvId && data.user) {
+        console.log(`${data.user?.username} stopped typing`);
+        removeTypingUser(data.conversationId, data.user?.id);
+      }
+    };
+    const cleanupMessage = on(SERVER.NEW_MESSAGE, onMessage);
+    const cleanUpTypingStart = on(SERVER.TYPING_START, onTypingStart);
+    const cleanUpTypingStop = on(SERVER.TYPING_STOP, onTypingStop);
+    return () => {
+      cleanupMessage();
+      cleanUpTypingStart();
+      cleanUpTypingStop();
+    };
+  }, [
+    on,
+    addMessage,
+    isConnected,
+    currentConvId,
+    addTypingUser,
+    removeTypingUser,
+  ]);
+
+  //socket event handlers
   if (!currentConvId)
     return (
       <div className="flex-1 flex items-center justify-center text-gray-500">
@@ -67,10 +97,11 @@ function MessageList() {
       </div>
     );
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+    <div className="flex-1 p-4 pb-16 overflow-y-auto  space-y-2">
       {messages.map((m) => (
         <MessageBubble key={m.id} message={m} />
       ))}
+      <TypingIndicator />
       {/*for auto scroll to new mesg */}
       <div ref={msgsEndRef}></div>
     </div>

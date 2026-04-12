@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 
 import api from "../lib/api.js";
 import { useToastStore } from "./toastStore.js";
+import { useAuthStore } from "./authStore.js";
 
 const useChatStore = create(
   persist(
@@ -13,6 +14,7 @@ const useChatStore = create(
       messages: {}, // {conversationId: [messages]}
       members: {}, //{conversationId: [members]}
       chatAreaView: "chats", //"chats" or "chatInfo"
+      typingUsers: {}, //{conversationId: [users]}
 
       //loading states
       isMessagesLoading: false,
@@ -96,6 +98,34 @@ const useChatStore = create(
         } finally {
           get().setConversationsLoading(false);
         }
+      },
+
+      addTypingUser: (conversationId, user) => {
+        set((state) => {
+          const currUser = useAuthStore.getState().user;
+          if (user?.id === currUser?.id) return state;
+
+          const currUsers = state.typingUsers[conversationId] || [];
+          //check if user is already typing
+          if (currUsers.some((u) => u.id === user?.id)) return state;
+          return {
+            typingUsers: {
+              ...state.typingUsers,
+              [conversationId]: [...(currUsers || []), user],
+            },
+          };
+        });
+      },
+
+      removeTypingUser: (conversationId, userId) => {
+        set((state) => ({
+          typingUsers: {
+            ...state.typingUsers,
+            [conversationId]: (state.typingUsers[conversationId] || [])?.filter(
+              (u) => u.id !== userId,
+            ),
+          },
+        }));
       },
 
       fetchMessages: async (conversationId) => {
@@ -242,9 +272,16 @@ const useCurrentMembers = () => {
   const members = useChatStore((state) => state.members[currConvId]);
   return members ?? [];
 };
+
+const useCurrentTypingUsers = () => {
+  const currConvId = useChatStore((state) => state.currentConversationId);
+  const typingUsers = useChatStore((state) => state.typingUsers[currConvId]);
+  return typingUsers ?? [];
+};
 export {
   useChatStore,
   useCurrentMessages,
   useCurrentConversation,
   useCurrentMembers,
+  useCurrentTypingUsers,
 };

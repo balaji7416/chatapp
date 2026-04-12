@@ -6,8 +6,6 @@ import connectionHandler from "./handlers/connection.handler.js";
 import socketHandler from "./utils/socketHanlder.js";
 import {
   sendMessageHandler,
-  deleteMessageHandler,
-  markMessageAsRead,
   typingStartHandler,
   typingStopHandler,
 } from "./handlers/message.handler.js";
@@ -51,39 +49,15 @@ const initializeSocket = (server) => {
       if (callback) callback(res);
     });
 
-    //delete message
-    socket.on(
-      CLIENT.DELETE_MESSAGE,
-      socketHandler(io, socket, deleteMessageHandler, {
-        requestEvent: CLIENT.DELETE_MESSAGE,
-        responseEvent: SERVER.MESSAGE_DELETED,
-      }),
-    );
+    socket.on(CLIENT.TYPING_START, (data, callback) => {
+      const res = typingStartHandler({ io, socket, data });
+      if (callback) callback(res);
+    });
 
-    //mark messaged as read
-    socket.on(
-      CLIENT.MARK_READ,
-      socketHandler(io, socket, markMessageAsRead, {
-        requestEvent: CLIENT.MARK_READ,
-        responseEvent: SERVER.MESSAGE_READ,
-      }),
-    );
-
-    socket.on(
-      CLIENT.TYPING_START,
-      socketHandler(io, socket, typingStartHandler, {
-        requestEvent: CLIENT.TYPING_START,
-        responseEvent: SERVER.TYPING_START,
-      }),
-    );
-
-    socket.on(
-      CLIENT.TYPING_STOP,
-      socketHandler(io, socket, typingStopHandler, {
-        requestEvent: CLIENT.TYPING_STOP,
-        responseEvent: SERVER.TYPING_STOP,
-      }),
-    );
+    socket.on(CLIENT.TYPING_STOP, (data, callback) => {
+      const res = typingStopHandler({ io, socket, data });
+      if (callback) callback(res);
+    });
 
     //on disconnect
     socket.on(INTERNAL.DISCONNECT, async () => {

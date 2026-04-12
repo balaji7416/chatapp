@@ -11,7 +11,7 @@ function ChatArea() {
     (state) => state.currentConversationId,
   );
   return (
-    <div className="flex-1 flex flex-col h-full gap-2">
+    <div className="flex-1 flex flex-col h-full gap-1">
       <ChatHeader
         onChatInfoClick={() => {
           setView("chatInfo");
