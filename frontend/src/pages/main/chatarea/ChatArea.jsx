@@ -3,10 +3,10 @@ import ChatInfo from "./ChatInfo.jsx";
 import MessageList from "./MessageList.jsx";
 import MessageInput from "./MessageInput.jsx";
 import { useChatStore } from "../../../store/chatStore.js";
-import { useState } from "react";
 
 function ChatArea() {
-  const [view, setView] = useState("chats");
+  const view = useChatStore((state) => state.chatAreaView);
+  const setView = useChatStore((state) => state.setChatAreaView);
   const currConversationId = useChatStore(
     (state) => state.currentConversationId,
   );

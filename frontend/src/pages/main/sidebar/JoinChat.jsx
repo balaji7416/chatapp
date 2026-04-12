@@ -1,27 +1,28 @@
 import { useState } from "react";
-import api from "../../../lib/api";
+
+import { CLIENT } from "../../../lib/events";
+import { useSocketStore } from "../../../store/socketStore";
 import { useChatStore } from "../../../store/chatStore";
-function JoinChat() {
+function JoinChat({setView}) {
   const [chatId, setChatId] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const showError = useChatStore((state) => state.error);
-  const showSuccess = useChatStore((state) => state.success);
-
+  const isConnected = useSocketStore((state) => state.isConnected);
+  const emit = useSocketStore((state) => state.emit);
+  const joinConversation = useChatStore((state) => state.joinConversation);
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!chatId.trim()) return;
     setLoading(true);
-    try {
-      const res = await api.post(`/conversations/${chatId}/join`, { chatId });
-      showSuccess(res.data.message);
+    const data = await joinConversation(chatId);
+    if (data.success) {
+      if (isConnected) {
+        emit(CLIENT.JOIN_CHAT, { conversationId: chatId, user: data.user });
+      }
       setChatId("");
-    } catch (err) {
-      console.error("Error in joining chat", err);
-      const msg = err.response?.data?.message || err.message || "Unknown error";
-      showError(msg);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
+    setView("chats");
   };
   return (
     <div>

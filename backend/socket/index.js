@@ -11,7 +11,8 @@ import {
   typingStartHandler,
   typingStopHandler,
 } from "./handlers/message.handler.js";
-import getUserStatusHandler from "./handlers/user.handler.js";
+import { joinChatHandler, leaveChatHanlder } from "./handlers/user.handler.js";
+
 const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
@@ -27,25 +28,28 @@ const initializeSocket = (server) => {
       `new connection: ${socket.id} - User: ${socket.user?.username}`,
     );
 
-    //on connection
-    socket.on(
-      INTERNAL.CONNECTION,
-      socketHandler(io, socket, connectionHandler, {
-        requestEvent: INTERNAL.CONNECTION,
-        responseEvent: "server:connection:response",
-      }),
-    );
+    socket.on(INTERNAL.CONNECTION, async (data, callback) => {
+      const res = await connectionHandler({ io, socket, data });
+      if (callback) callback(res);
+    });
 
-    //message handlers
+    socket.on(CLIENT.SEND_MESSAGE, (data, callback) => {
+      const res = sendMessageHandler({ io, socket, data });
+      if (callback) callback(res);
+    });
 
-    //send message
-    socket.on(
-      CLIENT.SEND_MESSAGE,
-      socketHandler(io, socket, sendMessageHandler, {
-        requestEvent: CLIENT.SEND_MESSAGE,
-        responseEvent: SERVER.NEW_MESSAGE,
-      }),
-    );
+    socket.on(CLIENT.JOIN_CHAT, (data, callback) => {
+      //console.log(`join chat: ${data}`);
+      const res = joinChatHandler({ io, socket, data });
+      if (callback) callback(res);
+    });
+
+    socket.on(CLIENT.LEAVE_CHAT, (data, callback) => {
+      //console.log(`leave chat: ${data}`);
+      //console.log(data);
+      const res = leaveChatHanlder({ io, socket, data });
+      if (callback) callback(res);
+    });
 
     //delete message
     socket.on(
@@ -62,15 +66,6 @@ const initializeSocket = (server) => {
       socketHandler(io, socket, markMessageAsRead, {
         requestEvent: CLIENT.MARK_READ,
         responseEvent: SERVER.MESSAGE_READ,
-      }),
-    );
-
-    //user handlers
-    socket.on(
-      CLIENT.GET_USER_STATUS,
-      socketHandler(io, socket, getUserStatusHandler, {
-        requestEvent: CLIENT.GET_USER_STATUS,
-        responseEvent: SERVER.USER_STATUS,
       }),
     );
 

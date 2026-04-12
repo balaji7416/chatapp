@@ -19,10 +19,17 @@ const addMember = async (conversation_id, user_id) => {
   const query = `
     insert into conversation_members(conversation_id, user_id)
     values ($1, $2)
-    returning conversation_id, user_id
   `;
   const { rows } = await pool.query(query, [conversation_id, user_id]);
-  return rows[0];
+  const getMemberQuery = `select * from conversation_members 
+   inner join users on 
+   conversation_members.user_id = users.id 
+   where conversation_id = $1 and user_id = $2`;
+  const { rows: member } = await pool.query(getMemberQuery, [
+    conversation_id,
+    user_id,
+  ]);
+  return member[0];
 };
 
 //remove member from conversation

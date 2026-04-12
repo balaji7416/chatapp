@@ -55,8 +55,8 @@ function Sidebar() {
       </div>
       <div className="flex-1 overflow-y-auto">
         {view === "chats" && <ConversationList />}
-        {view === "create" && <CreateChat />}
-        {view === "join" && <JoinChat />}
+        {view === "create" && <CreateChat setView={setView}/>}
+        {view === "join" && <JoinChat setView={setView} />}
       </div>
     </div>
   );

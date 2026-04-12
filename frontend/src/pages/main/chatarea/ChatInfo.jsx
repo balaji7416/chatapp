@@ -4,6 +4,7 @@ import {
   useCurrentMembers,
 } from "../../../store/chatStore.js";
 import { useAuthStore } from "../../../store/authStore.js";
+import { useEffect } from "react";
 
 function ChatInfo({ onClick }) {
   const user = useAuthStore((state) => state.user);
@@ -12,6 +13,13 @@ function ChatInfo({ onClick }) {
   const members = useCurrentMembers();
   const isMembersLoading = useChatStore((state) => state.isMembersLoading);
   const userRole = members.find((m) => m.id === user.id)?.role;
+  const fetchMembers = useChatStore((state) => state.fetchMembers);
+  //fetch conversation info on reload
+  useEffect(() => {
+    if(!currentConv) return;
+    if(!members || members.length === 0)
+      fetchMembers(currentConv.id);
+  },[currentConv, fetchMembers,members]);
   return (
     <div>
       <button onClick={onClick}>back</button>
@@ -28,6 +36,7 @@ function ChatInfo({ onClick }) {
               member?.username + " " + member?.role}
           </li>
         ))}
+        <span>chatId: {currentConv?.id}</span>
       </ul>
     </div>
   );

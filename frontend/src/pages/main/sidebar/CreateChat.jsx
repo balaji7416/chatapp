@@ -1,7 +1,7 @@
 import { useState } from "react";
 import api from "../../../lib/api";
 import { useToastStore } from "../../../store/toastStore";
-function CreateChat() {
+function CreateChat({setView}) {
   const [chatName, setChatName] = useState("");
   const [member, setMember] = useState("");
   const [members, setMembers] = useState([]);
@@ -47,6 +47,7 @@ function CreateChat() {
       showError(msg);
     } finally {
       setLoading(false);
+      setView("chats");
     }
   };
   return (

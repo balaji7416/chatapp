@@ -3,8 +3,6 @@ import { persist } from "zustand/middleware";
 
 import api from "../lib/api.js";
 import { useToastStore } from "./toastStore.js";
-const showSuccess = useToastStore.getState().success;
-const showError = useToastStore.getState().error;
 
 const useChatStore = create(
   persist(
@@ -14,6 +12,7 @@ const useChatStore = create(
       currentConversationId: null,
       messages: {}, // {conversationId: [messages]}
       members: {}, //{conversationId: [members]}
+      chatAreaView: "chats", //"chats" or "chatInfo"
 
       //loading states
       isMessagesLoading: false,
@@ -21,6 +20,8 @@ const useChatStore = create(
       isMembersLoading: false,
 
       //actions
+      setChatAreaView: (view) => set({ chatAreaView: view }),
+
       setConversations: (conversations) => set({ conversations }),
       setCurrentConversationId: (id) => set({ currentConversationId: id }),
       addMessage: (conversationId, message) =>
@@ -41,6 +42,15 @@ const useChatStore = create(
               ...(state.members[conversationId] || []),
               member,
             ],
+          },
+        })),
+      removeMember: (conversationId, member) =>
+        set((state) => ({
+          members: {
+            ...state.members,
+            [conversationId]: state.members[conversationId]?.filter(
+              (m) => m.id !== member.id,
+            ),
           },
         })),
 
@@ -101,6 +111,7 @@ const useChatStore = create(
       },
 
       sendMessage: async (conversationId, content) => {
+        const { error: showError } = useToastStore.getState();
         try {
           const res = await api.post(`/messages/${conversationId}`, {
             messageContent: content,
@@ -130,6 +141,7 @@ const useChatStore = create(
 
       selectConversation: async (conversationId) => {
         get().setCurrentConversationId(conversationId);
+        get().setChatAreaView("chats");
 
         const msgs = get().messages[conversationId];
         if (!msgs || msgs.length === 0) {
@@ -142,6 +154,8 @@ const useChatStore = create(
       },
 
       leaveConversation: async (conversationId) => {
+        const { success: showSuccess, error: showError } =
+          useToastStore.getState();
         try {
           await api.delete(`/conversations/${conversationId}/members/me`);
           showSuccess("Left conversation successfully");
@@ -156,6 +170,42 @@ const useChatStore = create(
             error.response?.data?.message || error.message || "Unknown error";
           showError(msg);
           console.error("Error in leaving conversation: ", error);
+        }
+      },
+
+      joinConversation: async (conversationId) => {
+        const { error: showError, success: showSuccess } =
+          useToastStore.getState();
+
+        try {
+          const res = await api.post(`/conversations/${conversationId}/join`);
+          const user = res?.data?.data;
+
+          get().addMember(conversationId, user);
+          showSuccess("Joined conversation successfully");
+
+          get().fetchConversations();
+
+          /*select conversation handles - 
+            - set current conversation id
+            - set view to chats
+            - fetch messages
+            - fetch members
+          */
+          await get().selectConversation(conversationId);
+          return {
+            success: true,
+            user,
+          };
+        } catch (error) {
+          const msg =
+            error.response?.data?.message || error.message || "Unknown error";
+          showError(msg);
+          console.error("Error in joining conversation: ", error);
+          return {
+            success: false,
+            error: msg,
+          };
         }
       },
     }),

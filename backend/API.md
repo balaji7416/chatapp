@@ -53,13 +53,13 @@
   - Join a conversation
   - URL params: conversationId
   - **AUTH**: required
-  - returns {conversation obj in data field of res}
+  - Returns :joined member obj
 
 - **POST /api/conversations/:conversationId/members/:userIdToAdd**
   - Add member to conversation
   - URL params: conversationId, userIdToAdd
   - **Auth**: required + must be member
-  - Returns: `{conversationId, userId}`
+  - Returns: `joined member obj`
 
 - **GET /api/conversations**
   - Get user conversations

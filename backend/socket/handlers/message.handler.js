@@ -6,29 +6,37 @@ import {
   markMessagesAsReadService,
 } from "../../services/message.service.js";
 
-const sendMessageHandler = async ({ io, socket, data }) => {
-  const { conversationId, content, replyToId = null } = data;
+const sendMessageHandler = ({ io, socket, data }) => {
+  const { conversationId, messageId, content, replyToId = null } = data;
 
-  // Basic validation
-  if (!conversationId || !content) {
-    throw new SocketError(
-      CLIENT.SEND_MESSAGE,
-      400,
-      "Conversation ID and message content are required",
-      "VALIDATION_ERROR",
-    );
+  if (!conversationId) {
+    return {
+      success: false,
+      error: "conversation id is required",
+    };
   }
 
-  const message = await sendMessageService(
-    conversationId,
-    content,
-    replyToId,
-    socket.user.id,
-  );
+  //send to everyone in the room except the sender
+  socket.to(`conversation:${conversationId}`).emit(SERVER.NEW_MESSAGE, {
+    success: true,
+    data: {
+      messageId,
+      conversationId,
+      content,
+      replyToId,
+      senderId: socket.user.id,
+      createdAt: new Date().toISOString(),
+    },
+  });
 
+  // for sender's callback
   return {
-    room: `conversation:${conversationId}`,
-    ...message,
+    success: true,
+    data: {
+      messageId,
+      content: content,
+      createdAt: new Date().toISOString(),
+    },
   };
 };
 
