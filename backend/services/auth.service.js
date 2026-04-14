@@ -12,7 +12,7 @@ import ApiError from "../utils/apiError.js";
 // generate access & refresh tokens
 const generateAccessToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "60m",
   });
 };
 

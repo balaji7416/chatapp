@@ -24,7 +24,7 @@ const createConversation = asyncHandler(async (req, res) => {
   if (isGroup && !name) {
     throw new ApiError(400, "group chat requires a name");
   }
-
+  if (!name) throw new ApiError(400, "conversation name is required");
   const conversation = await createConversationService(
     name,
     isGroup,

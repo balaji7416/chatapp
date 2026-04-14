@@ -11,6 +11,8 @@
 -- -- inner join conversations c on cm.conversation_id = c.id 
 -- -- where c.name ilike '%an%';
 
+DELETE FROM conversations
+where id = '816c7d00-49a1-4fd1-b15d-ca411d026850' or id = '719af7b0-dc25-4e7d-b70d-0328f4298eea';
 -- --get all users
 select id, email, username from users;
 

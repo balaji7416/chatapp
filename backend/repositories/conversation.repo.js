@@ -93,12 +93,24 @@ const findConversationById = async (id) => {
 //get conversations by user id
 const findUserConversations = async (userId) => {
   const query = `
-        select c.* from conversations c
-        inner join conversation_members cm
-        on c.id = cm.conversation_id
-        where cm.user_id = $1
-        order by c.last_message_at desc -- sort by last_message_at for recent chats
-    `;
+    select c.*, cm.*, 
+    (
+      select json_build_object(
+        'id', m.id, 
+        'content', m.content, 
+        'created_at', m.created_at
+      )
+      from messages m
+      where m.conversation_id = c.id
+      order by m.created_at desc 
+      limit 1
+    ) as last_message 
+     from conversations c
+     inner join conversation_members cm 
+     on c.id = cm.conversation_id
+     where cm.user_id = $1
+     order by c.created_at asc
+  `;
   const { rows } = await pool.query(query, [userId]);
   return rows;
 };
