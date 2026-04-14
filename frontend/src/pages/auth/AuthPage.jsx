@@ -114,7 +114,7 @@ function AuthPage() {
                 type="password"
                 required
                 minLength={8}
-                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                 title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
                 value={password}
                 placeholder="*******"
@@ -139,7 +139,7 @@ function AuthPage() {
               </p>
             </div>
 
-            {/*Error messag*/}
+            {/*Error message*/}
             {error && !loading && (
               <div className="alert alert-error text-sm mt-2">
                 <span>{error}</span>

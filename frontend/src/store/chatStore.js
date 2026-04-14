@@ -9,12 +9,14 @@ const useChatStore = create(
   persist(
     (set, get) => ({
       //state
+
       conversations: [],
       currentConversationId: null,
       messages: {}, // {conversationId: [messages]}
       members: {}, //{conversationId: [members]}
       chatAreaView: "chats", //"chats" or "chatInfo"
       typingUsers: {}, //{conversationId: [users]}
+      chatChosen: false,
 
       //loading states
       isMessagesLoading: false,
@@ -23,7 +25,7 @@ const useChatStore = create(
 
       //actions
       setChatAreaView: (view) => set({ chatAreaView: view }),
-
+      setChatChosen: (value) => set({ chatChosen: value }),
       setConversations: (conversations) => set({ conversations }),
       setCurrentConversationId: (id) => set({ currentConversationId: id }),
       addMessage: (conversationId, message) =>
@@ -172,7 +174,12 @@ const useChatStore = create(
       selectConversation: async (conversationId) => {
         get().setCurrentConversationId(conversationId);
         get().setChatAreaView("chats");
-
+        get().setChatChosen(true);
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === conversationId ? { ...c, unread_count: 0 } : c,
+          ),
+        }));
         const msgs = get().messages[conversationId];
         if (!msgs || msgs.length === 0) {
           await get().fetchMessages(conversationId);
@@ -180,6 +187,12 @@ const useChatStore = create(
         const members = get().members[conversationId];
         if (!members || members.length === 0) {
           await get().fetchMembers(conversationId);
+        }
+
+        try {
+          await api.post(`/messages/${conversationId}/read`);
+        } catch (error) {
+          console.error("Error in marking messages as read: ", error);
         }
       },
 

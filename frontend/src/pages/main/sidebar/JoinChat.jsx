@@ -1,9 +1,9 @@
 import { useState } from "react";
-
+import clsx from "clsx";
 import { CLIENT } from "../../../lib/events";
 import { useSocketStore } from "../../../store/socketStore";
 import { useChatStore } from "../../../store/chatStore";
-function JoinChat({setView}) {
+function JoinChat({ setView }) {
   const [chatId, setChatId] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,15 +25,24 @@ function JoinChat({setView}) {
     setView("chats");
   };
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className="card bg-base-100">
+      <form onSubmit={handleSubmit} className="card-body">
         <input
           type="text"
           placeholder="enter chat id"
           value={chatId}
           onChange={(e) => setChatId(e.target.value)}
+          className={clsx(
+            "input ",
+            " w-full rounded-md px-2 border-2 border-gray-200",
+            "transition-all duration-200 ease-in-out",
+            "focus:outline-none ",
+            "hover:border-gray-500 ",
+          )}
         />
-        <button type="submit">join</button>
+        <button type="submit" className="btn btn-primary ">
+          join
+        </button>
       </form>
 
       {loading && <p>joining...</p>}

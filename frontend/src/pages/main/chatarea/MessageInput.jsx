@@ -2,7 +2,7 @@ import { useChatStore } from "../../../store/chatStore.js";
 import { useSocketStore } from "../../../store/socketStore.js";
 import { useAuthStore } from "../../../store/authStore.js";
 import { CLIENT } from "../../../lib/events.js";
-
+import clsx from "clsx";
 import { useState, useRef } from "react";
 
 function MessageInput() {
@@ -81,15 +81,23 @@ function MessageInput() {
   };
 
   return (
-    <div className="p-3 border-b-3 ">
+    <div className="flex items-centergap-3 p-3 gap-2">
       <input
         type="text"
         onKeyDown={handleKeyPress}
         value={msg}
         onChange={(e) => setmsg(e.target.value)}
-        className="border-2 border-gray-100 rounded-md py-1 px-3"
+        className={clsx(
+          "input validator",
+          " w-full md:max-w-150 rounded-md px-2 border-2 border-gray-200",
+          "transition-all duration-200 ease-in-out",
+          "focus:outline-none ",
+          "hover:border-gray-400",
+        )}
       />
-      <button onClick={handleSend}>Send</button>
+      <button onClick={handleSend} className="btn btn-primary">
+        Send
+      </button>
     </div>
   );
 }

@@ -73,7 +73,7 @@ api.interceptors.response.use(
             withCredentials: true,
           },
         );
-        console.log("token refreshed", res.data.data);
+        //console.log("token refreshed", res.data.data);
         const new_access_token = res.data.data.access_token;
         const new_refresh_token = res.data.data.refresh_token;
 

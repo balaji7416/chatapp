@@ -42,8 +42,8 @@ const useSocketStore = create((set, get) => ({
         if (res.success) {
           set({ socket, isConnected: true });
           console.log("-----------------");
-          console.log("socket connected to server: ", res.data);
-          console.log("rooms: ", res.data.conversations);
+          //console.log("socket connected to server: ", res.data);
+          //console.log("rooms: ", res.data.conversations);
           console.log("session: ", res?.data?.sessionId);
           console.log("-----------------");
         } else {

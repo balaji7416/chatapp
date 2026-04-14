@@ -9,7 +9,9 @@ function ConversationList() {
     (state) => state.isConversationsLoading,
   );
   const selectConversation = useChatStore((state) => state.selectConversation);
-
+  const currConversationId = useChatStore(
+    (state) => state.currentConversationId,
+  );
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
@@ -18,16 +20,14 @@ function ConversationList() {
 
   if (conversations.length === 0) return <div>No conversations</div>;
 
-  {
-    /**/
-  }
   return (
-    <div>
+    <div className="flex flex-col space-y-3 p-2 overflow-y-auto">
       {conversations.map((c) => (
         <ConversationItem
           key={c.id}
           conversation={c}
           onClick={() => selectConversation(c.id)}
+          isActive={c.id === currConversationId}
         />
       ))}
     </div>

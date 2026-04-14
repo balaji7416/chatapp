@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-//import clsx from "clsx";
+import clsx from "clsx";
 
 import { useAuthStore } from "../../store/authStore";
 import { useSocketStore } from "../../store/socketStore.js";
@@ -21,9 +21,10 @@ function MainPage() {
   const on = useSocketStore((state) => state.on);
   const addMember = useChatStore((state) => state.addMember);
   const removeMember = useChatStore((state) => state.removeMember);
+  const chatChosen = useChatStore((state) => state.chatChosen);
 
   //to track if socket is already connected
-  const hasConnected = useRef(false);
+  // const hasConnected = useRef(false);
   useEffect(() => {
     if (!user) {
       navigate("/auth");
@@ -53,9 +54,8 @@ function MainPage() {
 
   //if user token is refreshed, but socket is not reconnected
   useEffect(() => {
-    if (user && access_token && !isSocketConnected && !hasConnected.current) {
+    if (user && access_token && !isSocketConnected) {
       console.log("connecting socket...");
-      hasConnected.current = true;
       connect();
     }
   }, [user, access_token, isSocketConnected, connect]);
@@ -64,8 +64,25 @@ function MainPage() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
-      <ChatArea />
+      {/* Sidebar - hidden on mobile when chat is chosen, always visible on desktop */}
+      <div
+        className={clsx(`
+        ${chatChosen ? "hidden lg:block" : "block w-full"}
+        lg:w-100 lg:shrink-0
+      `)}
+      >
+        <Sidebar />
+      </div>
+
+      {/* ChatArea - visible on desktop always, on mobile only when chat is chosen */}
+      <div
+        className={`
+        ${chatChosen ? "block w-full" : "hidden lg:block"}
+        lg:flex-1
+      `}
+      >
+        <ChatArea />
+      </div>
     </div>
   );
 }

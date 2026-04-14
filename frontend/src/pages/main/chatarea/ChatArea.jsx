@@ -10,6 +10,7 @@ function ChatArea() {
   const currConversationId = useChatStore(
     (state) => state.currentConversationId,
   );
+
   return (
     <div className="flex-1 flex flex-col h-full gap-1">
       <ChatHeader
@@ -17,6 +18,7 @@ function ChatArea() {
           setView("chatInfo");
           // setOptionsOpen(false);
         }}
+        setView={setView}
       />
       {view === "chats" && <MessageList />}
       {view === "chats" && currConversationId && <MessageInput />}

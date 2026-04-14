@@ -5,7 +5,7 @@ import { useChatStore, useCurrentMessages } from "../../../store/chatStore.js";
 import { useSocketStore } from "../../../store/socketStore.js";
 
 import MessageBubble from "./MessageBubble.jsx";
-import TypingIndicator from "../../../components/chatarea/TypingIndicator.jsx";
+import TypingIndicator from "./TypingIndicator.jsx";
 function MessageList() {
   const isMessagesLoading = useChatStore((state) => state.isMessagesLoading);
   const currentConvId = useChatStore((state) => state.currentConversationId);
@@ -97,7 +97,7 @@ function MessageList() {
       </div>
     );
   return (
-    <div className="flex-1 p-4 pb-16 overflow-y-auto  space-y-2">
+    <div className="flex-1 p-4 pb-16 overflow-y-auto space-y-2">
       {messages.map((m) => (
         <MessageBubble key={m.id} message={m} />
       ))}
