@@ -1,12 +1,12 @@
 import app from "./app.js";
-import dotnev from "dotenv";
+import dotenv from "dotenv";
 import pool from "./config/db.js";
 import initializeSocket from "./socket/index.js";
 import { createServer } from "http";
 
 import { cleanUpExpiredSessions } from "./services/session.service.js";
 
-dotnev.config();
+dotenv.config();
 const port = process.env.PORT || 3000;
 
 const startServer = async () => {

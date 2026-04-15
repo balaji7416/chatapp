@@ -7,20 +7,24 @@ import authRouter from "./routes/auth.routes.js";
 import conversationRouter from "./routes/conversation.routes.js";
 import messageRouter from "./routes/message.routes.js";
 
-import path from "path";
-import { fileURLToPath } from "url";
-
 //middleware
 import globalErrorHandler from "./middleware/global.error.middleware.js";
 
 const app = express();
+
+const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL];
 
 // cross origin resource sharing
 app.use(
   cors({
     origin: function (origin, callback) {
       // allow requests with no origin (like mobile apps or curl requests)
-      // or perfectly mirror the origin back to the client
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `Origin ${origin} not allowed by CORS`;
+        return callback(new Error(msg), false);
+      }
       callback(null, origin || true);
     },
     credentials: true,
@@ -30,15 +34,6 @@ app.use(
 //body parser
 app.use(express.json());
 app.use(cookieParser());
-
-//static files for socket.io testing
-// const __filenamePath = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filenamePath);
-// const file = path.join(__dirname, "public/index.html");
-// app.use(express.static("public"));
-// app.use("/", (req, res) => {
-//   res.sendFile(file);
-// });
 
 //mount routers
 app.use("/api/auth", authRouter);
