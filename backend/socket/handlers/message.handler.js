@@ -24,8 +24,8 @@ const sendMessageHandler = ({ io, socket, data }) => {
       conversationId,
       content,
       replyToId,
-      senderId: socket.user.id,
-      createdAt: new Date().toISOString(),
+      user_id: socket.user.id,
+      created_at: new Date().toISOString(),
     },
   });
 
