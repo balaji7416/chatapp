@@ -12,6 +12,9 @@ function MessageInput() {
   const emit = useSocketStore((state) => state.emit);
   const isConnected = useSocketStore((state) => state.isConnected);
 
+  const addMessage = useChatStore((state) => state.addMessage);
+  const replaceMessage = useChatStore((state) => state.replaceMessage);
+  const removeMessage = useChatStore((state) => state.removeMessage);
   const sendMessage = useChatStore((state) => state.sendMessage);
   const currConversationId = useChatStore(
     (state) => state.currentConversationId,
@@ -44,7 +47,7 @@ function MessageInput() {
       typingTimeoutRef.current = null;
     }
   };
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!msg.trim()) return;
     if (!currConversationId) {
       console.error("no conversation selected, cannot send message");
@@ -54,20 +57,45 @@ function MessageInput() {
     //stop typing before sending message
     handleTypingStop();
 
-    //ui is updated for sender instantly, as message is added to the store in the sendMessage function
-    const sendtMsg = sendMessage(currConversationId, msg);
-    const message = {
+    const tempId = crypto.randomUUID(); //generate unique id for message
+    const tempMsg = {
       conversationId: currConversationId,
       content: msg,
       replyToId: null,
-      messageId: sendtMsg.id,
+      messageId: tempId,
+      user_id: user.id,
+      created_at: new Date().toISOString(),
     };
+
+    //optimistic update for sender
+    addMessage(currConversationId, tempMsg);
+
+    //emit immediately
     setmsg("");
+    //console.log("message sent: ", tempMsg);
     if (!isConnected) {
       console.error("socket not connected, cannot send message");
       return;
     }
-    emit(CLIENT.SEND_MESSAGE, message);
+    emit(CLIENT.SEND_MESSAGE, tempMsg);
+
+    //api call in the background
+
+    const realMsg = await sendMessage(currConversationId, msg);
+    const message = {
+      conversationId: currConversationId,
+      content: msg,
+      replyToId: null,
+      messageId: realMsg.id,
+      user_id: user.id,
+    };
+
+    if (realMsg) {
+      replaceMessage(currConversationId, tempId, message);
+    } else {
+      //remove the msg if failed to send
+      removeMessage(currConversationId, tempId);
+    }
   };
 
   const handleKeyPress = (e) => {

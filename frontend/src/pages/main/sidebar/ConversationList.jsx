@@ -16,9 +16,28 @@ function ConversationList() {
     fetchConversations();
   }, [fetchConversations]);
 
-  if (isConversationsLoading) return <div>Loading...</div>;
+  if (isConversationsLoading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-3 p-3 w-full">
+            <div className="skeleton h-10 w-10 rounded-full"></div>
+            <div className="flex-1 space-y-2">
+              <div className="skeleton h-4 w-1/2"></div>
+              <div className="skeleton h-3 w-20"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  if (conversations.length === 0) return <div>No conversations</div>;
+  if (conversations.length === 0)
+    return (
+      <div className="text-base-content/55 font-semibold flex pt-8 justify-center h-full">
+        No chats yet
+      </div>
+    );
 
   return (
     <div className="flex flex-col space-y-3 p-2 overflow-y-auto">

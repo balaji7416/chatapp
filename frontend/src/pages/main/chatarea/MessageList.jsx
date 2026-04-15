@@ -44,7 +44,7 @@ function MessageList() {
     };
     const onTypingStart = ({ data }) => {
       if (data.conversationId === currentConvId && data.user) {
-        console.log(`${data.user?.username} started typing`);
+        //console.log(`${data.user?.username} started typing`);
         addTypingUser(data.conversationId, data.user);
       }
 
@@ -56,7 +56,7 @@ function MessageList() {
 
     const onTypingStop = ({ data }) => {
       if (data.conversationId === currentConvId && data.user) {
-        console.log(`${data.user?.username} stopped typing`);
+        //console.log(`${data.user?.username} stopped typing`);
         removeTypingUser(data.conversationId, data.user?.id);
       }
     };
@@ -80,26 +80,26 @@ function MessageList() {
   //socket event handlers
   if (!currentConvId)
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-500">
+      <div className="h-full flex items-center justify-center text-base-content/55 font-semibold">
         select a conversation to start chatting
       </div>
     );
   if (isMessagesLoading)
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-500">
-        Loading...
+      <div className="flex items-center justify-center text-base-content/55 font-semibold">
+        messages loading ...
       </div>
     );
   if (messages.length === 0)
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-500">
+      <div className="h-full flex items-center justify-center text-base-content/55 font-semibold">
         No messages
       </div>
     );
   return (
-    <div className="flex-1 p-4 pb-16 overflow-y-auto space-y-2">
+    <div className="h-full p-4 pb-16 overflow-y-auto space-y-2">
       {messages.map((m) => (
-        <MessageBubble key={m.id} message={m} />
+        <MessageBubble key={m.messageId || m.id} message={m} />
       ))}
       <TypingIndicator />
       {/*for auto scroll to new mesg */}

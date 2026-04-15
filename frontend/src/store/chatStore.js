@@ -38,6 +38,15 @@ const useChatStore = create(
             ],
           },
         })),
+      replaceMessage: (conversationId, prevId, newMessage) =>
+        set((state) => ({
+          messages: {
+            ...state.messages,
+            [conversationId]: state.messages[conversationId].map((msg) =>
+              msg.messageId === prevId ? { ...msg, ...newMessage } : msg,
+            ),
+          },
+        })),
       addMember: (conversationId, member) =>
         set((state) => ({
           members: {
@@ -149,7 +158,6 @@ const useChatStore = create(
             messageContent: content,
           });
           const msg = res.data.data;
-          get().addMessage(conversationId, msg);
           return msg;
         } catch (error) {
           showError("Failed to send message");

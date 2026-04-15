@@ -63,7 +63,7 @@ function MainPage() {
   if (!user) return <div>Loading...</div>;
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar - hidden on mobile when chat is chosen, always visible on desktop */}
       <div
         className={clsx(`

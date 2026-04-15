@@ -16,8 +16,7 @@ function ChatHeader({ onChatInfoClick, setView }) {
   const setChat = useChatStore((state) => state.setChatChosen);
   const emit = useSocketStore((state) => state.emit);
   const isConnected = useSocketStore((state) => state.isConnected);
-  if (!currConversation) return <div>choose a conversation</div>;
-
+  if (!currConversation) return null;
   const handleLeave = async () => {
     await leaveConversation(currConversation?.id);
     if (isConnected)

@@ -20,7 +20,10 @@ function ChatArea() {
         }}
         setView={setView}
       />
-      {view === "chats" && <MessageList />}
+      <div className="flex-1 overflow-auto">
+        {view === "chats" && <MessageList />}
+      </div>
+
       {view === "chats" && currConversationId && <MessageInput />}
       {view === "chatInfo" && currConversationId && (
         <ChatInfo onClick={() => setView("chats")} />

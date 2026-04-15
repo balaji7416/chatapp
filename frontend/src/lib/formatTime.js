@@ -23,4 +23,13 @@ const formatMsgTime = (timestamp) => {
   return format(date, "d MMM yyyy");
 };
 
-export { formatMsgTime };
+const extractTime = (timestamp) => {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+export { formatMsgTime, extractTime };

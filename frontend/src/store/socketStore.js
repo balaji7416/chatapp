@@ -8,9 +8,14 @@ const useSocketStore = create((set, get) => ({
   socket: null,
   isConnected: false,
   connectionError: null,
-
+  isConnecting: false,
   //actions
   connect: () => {
+    if (get().isConnecting) {
+      console.warn("socket conenction already in progress");
+      return;
+    }
+    set({ isConnecting: true });
     const token = useAuthStore.getState().access_token;
     if (!token) {
       console.error("token not found, cannot initialize socket");
@@ -31,7 +36,7 @@ const useSocketStore = create((set, get) => ({
     }
 
     console.log("initializing socket");
-    const socket = io("http://localhost:5000", {
+    const socket = io(import.meta.env.VITE_SOCKET_URL, {
       auth: { token },
     });
 
@@ -52,11 +57,12 @@ const useSocketStore = create((set, get) => ({
           console.log("-----------------");
         }
       });
+      set({ isConnecting: false });
     });
 
     socket.on("connect_error", (error) => {
       console.error("socket connect error: ", error);
-      set({ isConnected: false, connectionError: error });
+      set({ isConnected: false, connectionError: error, isConnecting: false });
     });
 
     socket.on("disconnect", () => {

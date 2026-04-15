@@ -1,6 +1,6 @@
 import { useToastStore } from "../store/toastStore.js";
 import { useEffect } from "react";
-
+import clsx from "clsx";
 function Toast() {
   const toasts = useToastStore((state) => state.toasts);
   const removeToast = useToastStore((state) => state.removeToast);
@@ -21,12 +21,25 @@ function Toast() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 space-y-3">
+    <div className="toast toast-end">
       {toasts.map((toast) => (
-        <div key={toast?.id}>
-          <div>
-            <span>{toast?.message}</span>
-            <button onClick={() => removeToast(toast.id)}>x</button>
+        <div
+          key={toast?.id}
+          className={clsx(
+            "alert shadow-md",
+            toast?.type === "error" && "alert-error",
+            toast?.type === "success" && "alert-success",
+            toast?.type === "info" && "alert-info",
+          )}
+        >
+          <div className="flex justify-between items-center w-full gap-2">
+            <span className="text-sm font-semibold">{toast?.message}</span>
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="btn btn-ghost btn-md"
+            >
+              x
+            </button>
           </div>
         </div>
       ))}
