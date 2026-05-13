@@ -4,16 +4,12 @@ dotenv.config();
 
 // create a pool
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : undefined,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,
 });
 
 pool.on("connect", () => {

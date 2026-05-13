@@ -1,99 +1,206 @@
 # Chat App
 
-## Current Status
+A full stack real time chat application, built with React, Express, Postgres, and Socket.IO
 
-- **Backend: Complete** - All Core features are working
-- **Frontend** - In progress (building with React + Tailwind)
+## Tech Stack
 
-## Backend
+### Backend
 
-### Tech
+- Node.js
+- Express.js
+- PostgreSQL
+- Socket.IO
+- Neon (PostgresSQL hosting)
 
-    - Server: Express, NodeJs
-    - Database: Postgres
-    - Auth: JWT
+### Frontend
 
-### Features:
+- React
+- Tailwind
+- DaisyUI
 
-#### Authentication
+## Features
 
-- Register
-- Login
-- Logout
-- Token refresh
+### Authentication
 
-> access token - short lived (15 min)
+- User registration
+- Login & logout
+- JWT token authentication
+- Access token - short lived
+- Refresh token - long lived, used to generate new access token
+- Cookies + local storage token support
+- Protected routes
 
-> refresh token - long lived (7d), used for refreshing access token when expired
+### Real-Time Messaging
 
-#### Conversations
+- Instant messaging with Socket.IO
+- Real time event handling
+- Persistent chat storage with PostgreSQL
 
-- create conversation
-- delete conversation
-- join conversation
-- add members to conversation
-- group and one-one conversations
+### Conversations/Chats
 
-#### Real-time (Socket.IO)
+- One-to-One conversations
+- Group conversations
+- Add / Remove conversation members
+- Delete conversations
+- Exit conversations
 
-    - Instant messaging
+### Additional
 
-> **NOTE**: for detailed API documentation, see [backend/API.md](backend/API.md)
+- Typing indicators
+- unread message badges
 
----
+## Project Structure
 
-## SET UP
-
-### Prerequisites
-
-    - Node.js
-    - PostgresSQL
-
-### Installation
+### Backend
 
 ```bash
+backend
+├── config/         # DB & app configuration
+├── controllers/    # Route controllers
+├── database/       # Database setup
+├── middleware/     # Express middlewares
+├── repositories/   # DB queries / data layer
+├── routes/         # API routes
+├── services/       # Business logic
+├── socket/         # Socket.IO setup & handlers
+├── utils/          # Helper functions
+├── package.json
+└── server.js
+```
 
-# Clone repository
-git clone https://github.com/balaji7416/chatapp
-cd chatapp
-cd backend
+### Frontend
 
-# Install dependencies
-npm install
+```bash
+frontend
+├── public/
+├── src/
+│   ├── components/
+│   │   └── sidebar/
+│   ├── lib/
+│   ├── pages/
+│   │   ├── auth/
+│   │   └── main/
+│   │       ├── chatarea/
+│   │       └── sidebar/
+│   ├── store/
+│   ├── App.jsx
+│   └── main.jsx
+├── package.json
+├── vite.config.js
+└── tailwind.config.js
+```
 
-# Set up environment variables
-# Create .env file in backend/ directory with:
+## Environmental Variables
 
+run this in `backend/` directory
+
+```bash
+cp .env.example .env
+```
+
+or
+create a .env file inside `backend/` directory
+
+```bash
 PORT=5000
-DB_USER=postgres
-DB_PASSWORD=your_postgres_password
-DB_NAME=chatapp
-DB_HOST=localhost
-DB_PORT=5432
 
-JWT_ACCESS_TOKEN_SECRET=your_secret_key
-JWT_REFRESH_TOKEN_SECRET=your_secret_key
+DATABASE_URL=
+
+JWT_ACCESS_TOKEN_SECRET=
+JWT_REFRESH_TOKEN_SECRET=
 
 NODE_ENV=development
+```
 
-## Database setup
-#run these commands
-#(replace postgres with your postgres username if different)
+fill the required fields with your credentials
+
+## Local Setup
+
+### Run these commands in order
+
+```bash
+git clone https://github.com/balaji7416/chatapp
+
+cd chatapp/backend
+npm install
+
+cd ../frontend
+npm install
+```
+
+### Database Setup
+
+This project uses PostgreSQL
+You can either:
+
+- run PostgreSQL locally
+- use a cloud PostgreSQL provider like Neon
+
+#### Local PostgreSQL
+
+Example connection string
+
+```bash
+DATABASE_URL=postgresql://postgres:password@localhost:5432/chatapp
+```
+
+Create database
+
+```bash
 psql -U postgres -c "CREATE DATABASE chatapp;"
+```
+
+Import schema
+
+```bash
 psql -U postgres -d chatapp -f database/schema.sql
+```
 
-#if asked for password, enter your postgreSQL password
+#### Cloud provider - Neon
 
-#Start development server
+create a PostgreSQL database using Neon and add the provided connection string to
+
+```bash
+DATABASE_URL=
+```
+
+Import Schema - run from chatapp/backend
+
+```bash
+psql "YOUR_DATABASE_URL" -f database/schema.sql
+```
+
+#### Start the development server
+
+Backend
+
+```bash
+cd backend
 npm run dev
 ```
 
-## API BASE URL:
+Frontend
 
-- [http://localhost:5000/api](http://localhost:5000/api)
+```bash
+cd frontend
+npm run dev
+```
 
----
+server runs at
 
-## Made by:
+```bash
+http://localhost:5000
+```
 
-**Ramala Karthik**
+## API Documentation
+
+Detailed API documentation is available in [`backend/API.md`](backend/API.md).
+
+## Live Demo
+
+- Frontend: [Live App](https://chatapp-sigma-murex.vercel.app/)
+- Backend: [API Server](https://chatapp-backend-8ppk.onrender.com)
+
+## Author
+
+Ramala Karthik

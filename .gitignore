@@ -22,7 +22,8 @@ Thumbs.db
 **/dist/
 **/build/
 
-# Optional: Ignore frontend until ready
-/frontend_/*
+
 # /frontend/*
 !/frontend/.gitkeep
+**/skills-lock.json
+**/.agents
