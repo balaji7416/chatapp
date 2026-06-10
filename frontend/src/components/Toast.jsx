@@ -1,6 +1,7 @@
 import { useToastStore } from "../store/toastStore.js";
 import { useEffect } from "react";
 import clsx from "clsx";
+
 function Toast() {
   const toasts = useToastStore((state) => state.toasts);
   const removeToast = useToastStore((state) => state.removeToast);

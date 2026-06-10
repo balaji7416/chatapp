@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import SocketError from "../utils/socketError.js";
 import dotenv from "dotenv";
 import { findUserById } from "../../repositories/user.repo.js";
 import { SERVER, INTERNAL } from "../constants/events.js";
@@ -14,7 +13,7 @@ const authMiddleware = async (socket, next) => {
     if (!token) {
       //return error to client, client listens on "connection_error"
       return next(
-        SocketError.unauthorized("connection", "Access token is missing"),
+        new Error("Authentication error: Token not found in request"),
       );
     }
 
@@ -27,9 +26,7 @@ const authMiddleware = async (socket, next) => {
     const reamainTime = expiryTime - Date.now();
 
     if (reamainTime <= 0) {
-      return next(
-        SocketError.unauthorized("connection", "Token already expired"),
-      );
+      return next(new Error("Authentication error: Token already expired"));
     }
 
     //set timer to force disconnect
@@ -39,10 +36,7 @@ const authMiddleware = async (socket, next) => {
       );
       socket.emit(
         SERVER.SESSION_EXPIRED,
-        SocketError.unauthorized(
-          SERVER.SESSION_EXPIRED,
-          "session expired, refresh token and login again",
-        ),
+        new Error("Authentication error: Token already expired"),
       );
       socket.disconnect(true); //immediately disconnect the socket (by passing true)
     }, reamainTime);
@@ -62,13 +56,9 @@ const authMiddleware = async (socket, next) => {
   } catch (err) {
     console.log(err);
     if (err instanceof jwt.TokenExpiredError) {
-      return next(
-        SocketError.unauthorized("connection", "Token already expired"),
-      );
+      return next(new Error("Authentication error: Token already expired"));
     }
-    return next(
-      SocketError.unauthorized("connection", "Acess token is invalid"),
-    );
+    return next(new Error("Authentication error: Invalid token"));
   }
 };
 

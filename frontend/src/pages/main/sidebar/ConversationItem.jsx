@@ -30,11 +30,11 @@ function ConversationItem({ conversation, onClick, isActive }) {
     >
       <div className="flex items-center gap-3">
         <div className="avatar rounded-full w-10 h-10 items-center justify-center bg-accent/50">
-          {conversation?.name[0].toUpperCase() || <User />}
+          {conversation?.display_name[0].toUpperCase() || <User />}
         </div>
         <div className="flex flex-col p-1 overflow-hidden">
           <span className="truncate font-medium text-base-content">
-            {conversation?.name}
+            {conversation?.display_name || conversation?.name || "No name"}
           </span>
           <span className="truncate text-sm text-base-content/50">
             {conversation?.last_message?.content || "No messages"}

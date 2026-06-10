@@ -3,7 +3,6 @@ import socketAuth from "./middleware/auth.middleware.js";
 import { CLIENT, SERVER, INTERNAL } from "./constants/events.js";
 import { createSession, removeSession } from "../services/session.service.js";
 import connectionHandler from "./handlers/connection.handler.js";
-import socketHandler from "./utils/socketHanlder.js";
 import {
   sendMessageHandler,
   typingStartHandler,

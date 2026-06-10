@@ -1,4 +1,3 @@
-import SocketError from "../utils/socketError.js";
 import { CLIENT, SERVER } from "../constants/events.js";
 import {
   sendMessageService,
@@ -97,12 +96,7 @@ const deleteMessageHandler = async ({ io, socket, data }) => {
   const { conversationId, messageId } = data;
 
   if (!messageId) {
-    throw new SocketError(
-      CLIENT.DELETE_MESSAGE,
-      400,
-      "message id is required",
-      "VALIDATION_ERROR",
-    );
+    throw new Error("message id is required");
   }
 
   //delete message from database
@@ -119,7 +113,7 @@ const markMessageAsRead = async ({ io, socket, data }) => {
   const { conversationId } = data;
 
   if (!conversationId) {
-    throw new SocketError(CLIENT.MARK_READ, 400, "conversation id is required");
+    throw new Error("conversation id is required");
   }
 
   //mark message as read

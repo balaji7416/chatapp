@@ -4,6 +4,7 @@ function NavigationPanel({
   onChatsClick,
   onCreateChatClick,
   onJoinChatClick,
+  onCreateDMClick,
   user,
 }) {
   const closeDropdown = () => {
@@ -55,6 +56,17 @@ function NavigationPanel({
             className="gap-4"
           >
             <Link size={15} /> <span>Join Chat</span>
+          </a>
+        </li>
+        <li>
+          <a
+            onClick={() => {
+              onCreateDMClick();
+              closeDropdown();
+            }}
+            className="gap-4"
+          >
+            <Link size={15} /> <span>Create DM</span>
           </a>
         </li>
         <div className="divider my-1"></div>

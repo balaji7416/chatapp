@@ -2,7 +2,10 @@ import axios from "axios";
 import { useAuthStore } from "../store/authStore.js";
 import { useSocketStore } from "../store/socketStore.js";
 
-const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const apiUrl =
+  import.meta.env.VITE_ENV === "development"
+    ? "http://localhost:5000/api"
+    : import.meta.env.VITE_API_URL;
 const api = axios.create({
   baseURL: apiUrl,
   withCredentials: true, //for cookies

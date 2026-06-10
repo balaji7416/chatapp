@@ -2,6 +2,7 @@ import ConversationList from "./ConversationList.jsx";
 import CreateChat from "./CreateChat.jsx";
 import clsx from "clsx";
 import JoinChat from "./JoinChat.jsx";
+import CreateDM from "./CreateDM.jsx";
 import NavigationPanel from "./NavigationPanel.jsx";
 import { useAuthStore } from "../../../store/authStore.js";
 import { useChatStore } from "../../../store/chatStore.js";
@@ -43,6 +44,9 @@ function Sidebar() {
           onJoinChatClick={() => {
             setView("join");
           }}
+          onCreateDMClick={() => {
+            setView("dm");
+          }}
           user={user}
         />
       </div>
@@ -50,6 +54,7 @@ function Sidebar() {
         {view === "chats" && <ConversationList />}
         {view === "create" && <CreateChat setView={setView} />}
         {view === "join" && <JoinChat setView={setView} />}
+        {view === "dm" && <CreateDM setView={setView} />}
       </div>
     </div>
   );

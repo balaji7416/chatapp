@@ -43,10 +43,11 @@ const createConversationService = async (
     return the existing conversation if there is
   */
   if (!isGroup) {
-    const otherMember = members[0] === createdBy ? members[1] : members[0];
+    const otherMember_id = members.find((id) => id !== createdBy_id);
+
     const existing_conversation = await findOneToOneConversation(
-      createdBy,
-      otherMember,
+      createdBy_id,
+      otherMember_id,
     );
     if (existing_conversation) {
       return existing_conversation;
@@ -67,6 +68,9 @@ const joinConversationService = async (conversation_id, user_id) => {
   if (!conversation) {
     throw new ApiError(404, "Conversation not found");
   }
+  if (!conversation?.isGroup)
+    throw new ApiError(400, "cannot join one-one chat");
+
   const user = await findUserById(user_id);
   if (!user) throw new ApiError(400, "User does not exist");
 
@@ -124,6 +128,8 @@ const addMemberService = async (conversationId, userId, addedUserId) => {
   if (!conversation) {
     throw new ApiError(404, "Conversation not found");
   }
+  if (!conversation?.isGroup)
+    throw new ApiError(400, "cannot add member to one-one chat");
   //check if user exists
   const user = await findUserById(userId);
   if (!user) {

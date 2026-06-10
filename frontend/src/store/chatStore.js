@@ -47,6 +47,15 @@ const useChatStore = create(
             ),
           },
         })),
+      removeMessage: (conversationId, messageId) =>
+        set((state) => ({
+          messages: {
+            ...state.messages,
+            [conversationId]: (state.messages[conversationId] || []).filter(
+              (msg) => msg.messageId !== messageId && msg.id !== messageId,
+            ),
+          },
+        })),
       addMember: (conversationId, member) =>
         set((state) => ({
           members: {

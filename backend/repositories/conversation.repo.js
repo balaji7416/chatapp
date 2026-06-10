@@ -104,7 +104,17 @@ const findUserConversations = async (userId) => {
       where m.conversation_id = c.id
       order by m.created_at desc 
       limit 1
-    ) as last_message 
+    ) as last_message, 
+    case 
+      when c.is_group = true then c.name 
+      else (
+        select u.username 
+        from conversation_members cm2
+        inner join users u on cm2.user_id = u.id 
+        where cm2.conversation_id = c.id 
+        and cm2.user_id != $1
+      )
+     end as display_name
      from conversations c
      inner join conversation_members cm 
      on c.id = cm.conversation_id

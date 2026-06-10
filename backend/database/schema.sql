@@ -10,8 +10,7 @@ create table
         email varchar(255) unique not null,
         username varchar(80) unique not null,
         password_hash varchar(255) not null,
-        full_name varchar(100), --display name
-        avatar_url text, --profile picture link
+    
         -- auth & presence
         refresh_token text unique,
         status varchar(20) default 'offline', --'online', 'offline', 'away'
@@ -45,7 +44,6 @@ create table
         role varchar(30) default 'member', --'admin', 'member'
         unread_count int default 0, --for notification badges 
         last_read_message_id uuid ,-- for tracking unread messages
-        is_muted boolean default false,
         joined_at timestamp default current_timestamp,
         primary key (conversation_id, user_id)
     );
@@ -59,9 +57,6 @@ create table
         user_id uuid references Users (id) on delete set null,
         reply_to_id uuid references messages (id) on delete set null, --for threaded replies
         content text not null,
-        type varchar(30) default 'text', --'text', 'image', 'system', etc.
-        is_edited boolean default false,
-        deleted_at timestamp default null, --for soft delete
         created_at timestamp default current_timestamp,
         updated_at timestamp default current_timestamp
     );
