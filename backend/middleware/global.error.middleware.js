@@ -1,23 +1,17 @@
-import { response } from "express";
-
 const globalErrorHandler = (err, req, res, next) => {
-  //default values
   const status = err.status || 500;
   const message = err.message || "internal server error";
 
-  //log error for debugging
   console.log("Error ", status, " ", message);
   if (process.env.NODE_ENV === "development") {
     console.error(err);
   }
 
-  const response = {
+  return res.status(status).json({
     success: false,
-    message: message,
-    status: status,
-  };
-
-  return res.status(status).json(response);
+    message,
+    status,
+  });
 };
 
 export default globalErrorHandler;

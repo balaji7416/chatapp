@@ -13,12 +13,15 @@ export const CLIENT = {
   // Typing events
   TYPING_START: "client:typing:start",
   TYPING_STOP: "client:typing:stop",
+
+  MARK_MESSAGE_AS_READ: "client:message:read",
 };
 
 // Events server sends to client
 export const SERVER = {
   // Message events
   NEW_MESSAGE: "server:message:new",
+  MARK_MESSAGE_AS_READ: "server:message:read",
 
   // Chat events
   CHAT_JOINED: "server:chat:joined",

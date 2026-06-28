@@ -1,13 +1,5 @@
 import { SERVER } from "../constants/events.js";
 
-// const getUserStatusHandler = async ({ io, socket, data }) => {
-//   const { userId } = data;
-//   const user = await findUserById(userId);
-//   return {
-//     user,
-//   };
-// };
-
 const joinChatHandler = async ({ io, socket, data }) => {
   const { conversationId, user } = data;
   socket.join(`conversation:${conversationId}`);
@@ -36,7 +28,7 @@ const leaveChatHanlder = async ({ io, socket, data }) => {
     success: true,
     data: {
       conversationId,
-      user: user,
+      user,
       message: `${user?.username} left chat`,
     },
   });

@@ -1,11 +1,9 @@
-import { CLIENT, SERVER } from "../constants/events.js";
+import { SERVER } from "../constants/events.js";
 import {
-  sendMessageService,
-  deleteMessageService,
   markMessagesAsReadService,
 } from "../../services/message.service.js";
 
-const sendMessageHandler = ({ io, socket, data }) => {
+const sendMessageHandler = ({ socket, data }) => {
   const { conversationId, messageId, content, replyToId = null } = data;
 
   if (!conversationId) {
@@ -15,7 +13,6 @@ const sendMessageHandler = ({ io, socket, data }) => {
     };
   }
 
-  //send to everyone in the room except the sender
   socket.to(`conversation:${conversationId}`).emit(SERVER.NEW_MESSAGE, {
     success: true,
     data: {
@@ -28,18 +25,17 @@ const sendMessageHandler = ({ io, socket, data }) => {
     },
   });
 
-  // for sender's callback
   return {
     success: true,
     data: {
       messageId,
-      content: content,
+      content,
       createdAt: new Date().toISOString(),
     },
   };
 };
 
-const typingStartHandler = async ({ io, socket, data }) => {
+const typingStartHandler = ({ socket, data }) => {
   const { conversationId, user } = data;
   if (!conversationId) {
     return {
@@ -56,6 +52,7 @@ const typingStartHandler = async ({ io, socket, data }) => {
       message: `${user?.username} started typing`,
     },
   });
+
   return {
     success: true,
     data: {
@@ -65,7 +62,7 @@ const typingStartHandler = async ({ io, socket, data }) => {
   };
 };
 
-const typingStopHandler = async ({ io, socket, data }) => {
+const typingStopHandler = ({ socket, data }) => {
   const { conversationId, user } = data;
   if (!conversationId) {
     return {
@@ -92,23 +89,6 @@ const typingStopHandler = async ({ io, socket, data }) => {
   };
 };
 
-const deleteMessageHandler = async ({ io, socket, data }) => {
-  const { conversationId, messageId } = data;
-
-  if (!messageId) {
-    throw new Error("message id is required");
-  }
-
-  //delete message from database
-  await deleteMessageService(messageId, socket?.user.id);
-
-  return {
-    room: `conversation:${conversationId}`,
-    id: messageId,
-    message: "message deleted",
-  };
-};
-
 const markMessageAsRead = async ({ io, socket, data }) => {
   const { conversationId } = data;
 
@@ -116,14 +96,19 @@ const markMessageAsRead = async ({ io, socket, data }) => {
     throw new Error("conversation id is required");
   }
 
-  //mark message as read
   await markMessagesAsReadService(conversationId, socket?.user.id);
 
-  return {
-    room: `conversation:${conversationId}`,
+  io.to(`conversation:${conversationId}`).emit(SERVER.MARK_MESSAGE_AS_READ, {
+    success: true,
+    data: {
+      conversationId,
+      user_id: socket?.user?.id,
+      message: "messages marked as read",
+    },
+  });
 
-    id: conversationId,
-    conversationId: conversationId,
+  return {
+    conversationId,
     userId: socket?.user?.id,
     message: "messages marked as read",
   };
@@ -131,7 +116,6 @@ const markMessageAsRead = async ({ io, socket, data }) => {
 
 export {
   sendMessageHandler,
-  deleteMessageHandler,
   markMessageAsRead,
   typingStartHandler,
   typingStopHandler,

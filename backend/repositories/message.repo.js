@@ -74,10 +74,6 @@ const isOwnerOfMessage = async (message_id, user_id) => {
 };
 
 const markMessagesAsRead = async (conversation_id, user_id) => {
-  const queryToGetLastMessage = `
-    select last_message_id from conversations
-    where id = 
-  `;
   const query = `
     update conversation_members
     set last_read_message_id = (

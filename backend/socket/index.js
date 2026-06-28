@@ -1,9 +1,10 @@
 import { Server } from "socket.io";
 import socketAuth from "./middleware/auth.middleware.js";
-import { CLIENT, SERVER, INTERNAL } from "./constants/events.js";
-import { createSession, removeSession } from "../services/session.service.js";
+import { CLIENT, INTERNAL } from "./constants/events.js";
+import { removeSession } from "../services/session.service.js";
 import connectionHandler from "./handlers/connection.handler.js";
 import {
+  markMessageAsRead,
   sendMessageHandler,
   typingStartHandler,
   typingStopHandler,
@@ -21,50 +22,46 @@ const initializeSocket = (server) => {
   io.use(socketAuth);
 
   io.on(INTERNAL.CONNECTION, async (socket) => {
-    console.log(
-      `new connection: ${socket.id} - User: ${socket.user?.username}`,
-    );
+    console.log(`new connection: ${socket.id} - User: ${socket.user?.username}`);
 
+    // Client emits "connection" as a handshake to join its rooms
     socket.on(INTERNAL.CONNECTION, async (data, callback) => {
       const res = await connectionHandler({ io, socket, data });
       if (callback) callback(res);
     });
 
     socket.on(CLIENT.SEND_MESSAGE, (data, callback) => {
-      const res = sendMessageHandler({ io, socket, data });
+      const res = sendMessageHandler({ socket, data });
       if (callback) callback(res);
     });
 
     socket.on(CLIENT.JOIN_CHAT, (data, callback) => {
-      //console.log(`join chat: ${data}`);
       const res = joinChatHandler({ io, socket, data });
       if (callback) callback(res);
     });
 
     socket.on(CLIENT.LEAVE_CHAT, (data, callback) => {
-      //console.log(`leave chat: ${data}`);
-      //console.log(data);
       const res = leaveChatHanlder({ io, socket, data });
       if (callback) callback(res);
     });
 
     socket.on(CLIENT.TYPING_START, (data, callback) => {
-      const res = typingStartHandler({ io, socket, data });
+      const res = typingStartHandler({ socket, data });
+      if (callback) callback(res);
+    });
+
+    socket.on(CLIENT.MARK_MESSAGE_AS_READ, (data, callback) => {
+      const res = markMessageAsRead({ io, socket, data });
       if (callback) callback(res);
     });
 
     socket.on(CLIENT.TYPING_STOP, (data, callback) => {
-      const res = typingStopHandler({ io, socket, data });
+      const res = typingStopHandler({ socket, data });
       if (callback) callback(res);
     });
 
-    //on disconnect
     socket.on(INTERNAL.DISCONNECT, async () => {
-      console.log(
-        `disconnected: ${socket.id} - User: ${socket.user?.username}`,
-      );
-
-      //remove session from the database
+      console.log(`disconnected: ${socket.id} - User: ${socket.user?.username}`);
       try {
         await removeSession(socket.id);
         console.log(`${socket.user.username || socket.id} session removed`);

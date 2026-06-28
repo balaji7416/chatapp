@@ -1,6 +1,6 @@
 import pool from "../config/db.js";
 
-//get conversation members
+// get conversation members
 const getConversationMembers = async (conversation_id) => {
   const query = `
         select c.id as conversation_id, c.name as conversation_name,u.id, u.username, u.email, u.full_name, cm.role as role from users u
@@ -14,62 +14,50 @@ const getConversationMembers = async (conversation_id) => {
   return rows;
 };
 
-//add memeber to conversation
+// add member to conversation
 const addMember = async (conversation_id, user_id) => {
-  const query = `
+  const insertQuery = `
     insert into conversation_members(conversation_id, user_id)
     values ($1, $2)
   `;
-  const { rows } = await pool.query(query, [conversation_id, user_id]);
-  const getMemberQuery = `select * from conversation_members 
-   inner join users on 
-   conversation_members.user_id = users.id 
-   where conversation_id = $1 and user_id = $2`;
-  const { rows: member } = await pool.query(getMemberQuery, [
-    conversation_id,
-    user_id,
-  ]);
-  return member[0];
+  await pool.query(insertQuery, [conversation_id, user_id]);
+
+  const selectQuery = `
+    select * from conversation_members
+    inner join users on conversation_members.user_id = users.id
+    where conversation_id = $1 and user_id = $2
+  `;
+  const { rows } = await pool.query(selectQuery, [conversation_id, user_id]);
+  return rows[0];
 };
 
-//remove member from conversation
-const removeMember = async (conversation_id, user_id) => {
+/**
+ * Removes a user from a conversation. Used by both admin removal and self-leave.
+ */
+const removeMemberFromConversation = async (conversation_id, user_id) => {
   const query = `
     delete from conversation_members
     where conversation_id = $1 and user_id = $2
     returning user_id, conversation_id
-    `;
+  `;
   const { rows } = await pool.query(query, [conversation_id, user_id]);
   return rows[0];
 };
 
 const isAdmin = async (conversation_id, user_id) => {
-  const query = `select cm.role as role from 
-    conversation_members cm 
+  const query = `
+    select cm.role as role from conversation_members cm
     where cm.conversation_id = $1 and cm.user_id = $2
   `;
   const { rows } = await pool.query(query, [conversation_id, user_id]);
-
-  //if user is not a member of the conversation
   if (rows.length === 0) return false;
   return rows[0].role === "admin";
-};
-
-//leave conversation
-const leaveConversation = async (conversation_id, user_id) => {
-  const query = `
-  delete from conversation_members
-  where conversation_id=$1 and user_id=$2
-  returning conversation_id, user_id
-  `;
-  const { rows } = await pool.query(query, [conversation_id, user_id]);
-  return rows[0];
 };
 
 export {
   getConversationMembers,
   addMember,
-  removeMember,
+  removeMemberFromConversation as removeMember,
+  removeMemberFromConversation as leaveConversation,
   isAdmin,
-  leaveConversation,
 };
