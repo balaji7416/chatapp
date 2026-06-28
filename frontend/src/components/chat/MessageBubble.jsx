@@ -1,9 +1,10 @@
-import { useAuthStore } from "../../../store/authStore";
-import { extractTime } from "../../../lib/formatTime";
+import { useAuthStore } from "../../store/authStore";
+import { extractTime } from "../../lib/formatTime";
+
 function MessageBubble({ message }) {
   const user = useAuthStore((state) => state.user);
   const isown = message?.user_id === user?.id;
-  // console.log("message: ", message);
+  
   return (
     <div className={`chat ${isown ? "chat-end" : "chat-start"}`}>
       <div

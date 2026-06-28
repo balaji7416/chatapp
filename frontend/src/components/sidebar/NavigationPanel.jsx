@@ -1,4 +1,5 @@
-import { Menu, X, User, LogOut, Plus, Link, MessageSquare } from "lucide-react";
+import { Menu, Plus, Link, MessageSquare, LogOut } from "lucide-react";
+
 function NavigationPanel({
   onLogout,
   onChatsClick,

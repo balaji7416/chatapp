@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
-import { SERVER } from "../../../lib/events.js";
+import { SERVER } from "../../lib/events.js";
 
-import { useChatStore, useCurrentMessages } from "../../../store/chatStore.js";
-import { useSocketStore } from "../../../store/socketStore.js";
+import { useChatStore, useCurrentMessages } from "../../store/chatStore.js";
+import { useSocketStore } from "../../store/socketStore.js";
 
 import MessageBubble from "./MessageBubble.jsx";
 import TypingIndicator from "./TypingIndicator.jsx";
+
 function MessageList() {
   const isMessagesLoading = useChatStore((state) => state.isMessagesLoading);
   const currentConvId = useChatStore((state) => state.currentConversationId);
@@ -18,7 +19,7 @@ function MessageList() {
 
   const msgsEndRef = useRef(null);
 
-  //fetch messaegs on reload
+  //fetch messages on reload
   useEffect(() => {
     if (!currentConvId) return;
     fetchMessages(currentConvId);
@@ -26,7 +27,7 @@ function MessageList() {
 
   const messages = useCurrentMessages();
 
-  //auto scroll to new mesg
+  //auto scroll to new msg
   useEffect(() => {
     msgsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -44,7 +45,6 @@ function MessageList() {
     };
     const onTypingStart = ({ data }) => {
       if (data.conversationId === currentConvId && data.user) {
-        //console.log(`${data.user?.username} started typing`);
         addTypingUser(data.conversationId, data.user);
       }
 
@@ -56,7 +56,6 @@ function MessageList() {
 
     const onTypingStop = ({ data }) => {
       if (data.conversationId === currentConvId && data.user) {
-        //console.log(`${data.user?.username} stopped typing`);
         removeTypingUser(data.conversationId, data.user?.id);
       }
     };
@@ -102,7 +101,7 @@ function MessageList() {
         <MessageBubble key={m.messageId || m.id} message={m} />
       ))}
       <TypingIndicator />
-      {/*for auto scroll to new mesg */}
+      {/*for auto scroll to new msg */}
       <div ref={msgsEndRef}></div>
     </div>
   );

@@ -1,7 +1,7 @@
-import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/authStore.js";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore.js";
+import clsx from "clsx";
 
 function AuthPage() {
   const [username, setUsername] = useState("");
@@ -34,27 +34,16 @@ function AuthPage() {
       return;
     clearError();
     const data = isLogin ? { email, password } : { username, email, password };
-    let res;
-    if (isLogin) {
-      res = await login(data);
-    } else {
-      res = await register(data);
-    }
+    const res = isLogin ? await login(data) : await register(data);
 
     if (res?.success) {
-      let msg = isLogin ? "Login successful" : "Registration successful";
-      alert(msg);
+      alert(isLogin ? "Login successful" : "Registration successful");
       navigate("/");
     }
   };
 
   return (
-    <div
-      className="min-h-screen w-full hero bg-base-200"
-      style={{
-        backgroundImage: "url()",
-      }}
-    >
+    <div className="min-h-screen w-full hero bg-base-200">
       <div className="hero-content flex-col lg:flex-row-reverse w-full lg:gap-10">
         {/*hero text*/}
         <div className="text-center lg:text-left">
@@ -83,8 +72,8 @@ function AuthPage() {
                   className={clsx(
                     "input w-full rounded-md px-2 border-2 border-gray-200",
                     "transition-all duration-200 ease-in-out",
-                    "focus:outline-none ",
-                    "hover:border-gray-500 ",
+                    "focus:outline-none",
+                    "hover:border-gray-500",
                   )}
                 />
               </div>
@@ -100,10 +89,10 @@ function AuthPage() {
                 disabled={loading}
                 className={clsx(
                   "input validator",
-                  " w-full rounded-md px-2 border-2 border-gray-200",
+                  "w-full rounded-md px-2 border-2 border-gray-200",
                   "transition-all duration-200 ease-in-out",
-                  "focus:outline-none ",
-                  "hover:border-gray-500 ",
+                  "focus:outline-none",
+                  "hover:border-gray-500",
                 )}
               />
             </div>
@@ -114,7 +103,6 @@ function AuthPage() {
                 type="password"
                 required
                 minLength={8}
-                //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                 title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
                 value={password}
                 placeholder="*******"
@@ -122,10 +110,10 @@ function AuthPage() {
                 disabled={loading}
                 className={clsx(
                   "input validator",
-                  " w-full rounded-md px-2 border-2 border-gray-200",
+                  "w-full rounded-md px-2 border-2 border-gray-200",
                   "transition-all duration-200 ease-in-out",
-                  "focus:outline-none ",
-                  "hover:border-gray-400 ",
+                  "focus:outline-none",
+                  "hover:border-gray-400",
                 )}
               />
               <p className="validator-hint">
@@ -139,7 +127,6 @@ function AuthPage() {
               </p>
             </div>
 
-            {/*Error message*/}
             {error && !loading && (
               <div className="alert alert-error text-sm mt-2">
                 <span>{error}</span>
@@ -150,7 +137,6 @@ function AuthPage() {
               <button
                 type="submit"
                 disabled={loading}
-                full
                 className="btn btn-primary w-full"
               >
                 {loading ? (
@@ -173,7 +159,6 @@ function AuthPage() {
                 {isLogin ? "register" : "login"}
               </button>
             </div>
-            {/* </fieldset> */}
           </form>
         </div>
       </div>

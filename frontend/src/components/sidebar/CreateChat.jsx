@@ -1,8 +1,9 @@
 import { useState } from "react";
 import clsx from "clsx";
-import api from "../../../lib/api";
-import { useToastStore } from "../../../store/toastStore";
+import api from "../../lib/api";
+import { useToastStore } from "../../store/toastStore";
 import { Plus } from "lucide-react";
+
 function CreateChat({ setView }) {
   const [chatName, setChatName] = useState("");
   const [member, setMember] = useState("");
@@ -14,22 +15,24 @@ function CreateChat({ setView }) {
   const showInfo = useToastStore((state) => state.info);
 
   const addMember = () => {
-    if (!member) {
+    if (!member.trim()) {
       showInfo("Please enter a member");
+      return;
     }
     if (members.includes(member)) {
       showInfo("Member already added");
+      return;
     }
     setMembers([...members, member]);
     setMember("");
   };
+
   const removeMember = (id) => {
-    setMembers(members.filter((member) => member !== id));
-    setMember("");
+    setMembers(members.filter((m) => m !== id));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(chatName, members);
     try {
       setLoading(true);
       await api.post("/conversations", {
@@ -52,6 +55,7 @@ function CreateChat({ setView }) {
       setLoading(false);
     }
   };
+
   return (
     <div className="card bg-base-100">
       <form onSubmit={handleSubmit} className="card-body">
@@ -62,11 +66,11 @@ function CreateChat({ setView }) {
           value={chatName}
           onChange={(e) => setChatName(e.target.value)}
           className={clsx(
-            "input ",
-            " w-full rounded-md px-2 border-2 border-gray-200",
+            "input",
+            "w-full rounded-md px-2 border-2 border-gray-200",
             "transition-all duration-200 ease-in-out",
-            "focus:outline-none ",
-            "hover:border-gray-500 ",
+            "focus:outline-none",
+            "hover:border-gray-500",
           )}
         />
         <div className="flex gap-2">
@@ -76,11 +80,11 @@ function CreateChat({ setView }) {
             value={member}
             onChange={(e) => setMember(e.target.value)}
             className={clsx(
-              "input ",
-              " w-full rounded-md px-2 border-2 border-gray-200",
+              "input",
+              "w-full rounded-md px-2 border-2 border-gray-200",
               "transition-all duration-200 ease-in-out",
-              "focus:outline-none ",
-              "hover:border-gray-500 ",
+              "focus:outline-none",
+              "hover:border-gray-500",
             )}
           />
           <button type="button" onClick={addMember} className="btn btn-primary">
@@ -89,16 +93,16 @@ function CreateChat({ setView }) {
         </div>
         <ul className="list bg-base-100 rounded-box shadow-md">
           <li className="list-row">You</li>
-          {members.map((member) => (
+          {members.map((m) => (
             <li
-              key={member}
+              key={m}
               className="list-row flex justify-between items-center"
             >
-              <span className="font-semibold tracking-wider">{member}</span>
+              <span className="font-semibold tracking-wider">{m}</span>
               <button
                 type="button"
                 className="btn btn-error"
-                onClick={() => removeMember(member)}
+                onClick={() => removeMember(m)}
               >
                 remove
               </button>

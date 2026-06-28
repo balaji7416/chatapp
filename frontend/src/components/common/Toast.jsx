@@ -1,4 +1,4 @@
-import { useToastStore } from "../store/toastStore.js";
+import { useToastStore } from "../../store/toastStore.js";
 import { useEffect } from "react";
 import clsx from "clsx";
 

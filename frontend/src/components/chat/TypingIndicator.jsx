@@ -1,4 +1,4 @@
-import { useCurrentTypingUsers } from "../../../store/chatStore.js";
+import { useCurrentTypingUsers } from "../../store/chatStore.js";
 function TypingIndicator() {
   const typingUsers = useCurrentTypingUsers();
   if (typingUsers.length === 0) return null;

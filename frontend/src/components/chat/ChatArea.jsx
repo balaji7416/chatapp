@@ -2,7 +2,7 @@ import ChatHeader from "./ChatHeader.jsx";
 import ChatInfo from "./ChatInfo.jsx";
 import MessageList from "./MessageList.jsx";
 import MessageInput from "./MessageInput.jsx";
-import { useChatStore } from "../../../store/chatStore.js";
+import { useChatStore } from "../../store/chatStore.js";
 
 function ChatArea() {
   const view = useChatStore((state) => state.chatAreaView);
@@ -16,7 +16,6 @@ function ChatArea() {
       <ChatHeader
         onChatInfoClick={() => {
           setView("chatInfo");
-          // setOptionsOpen(false);
         }}
         setView={setView}
       />

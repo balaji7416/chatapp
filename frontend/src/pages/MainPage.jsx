@@ -2,14 +2,14 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 
-import { useAuthStore } from "../../store/authStore";
-import { useSocketStore } from "../../store/socketStore.js";
-import { useToastStore } from "../../store/toastStore.js";
-import { useChatStore } from "../../store/chatStore.js";
-import { SERVER } from "../../lib/events.js";
+import { useAuthStore } from "../store/authStore";
+import { useSocketStore } from "../store/socketStore.js";
+import { useToastStore } from "../store/toastStore.js";
+import { useChatStore } from "../store/chatStore.js";
+import { SERVER } from "../lib/events.js";
 
-import Sidebar from "./sidebar/Sidebar.jsx";
-import ChatArea from "./chatarea/ChatArea.jsx";
+import Sidebar from "../components/sidebar/Sidebar.jsx";
+import ChatArea from "../components/chat/ChatArea.jsx";
 
 function MainPage() {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useState } from "react";
-import api from "../../../lib/api";
-import { useToastStore } from "../../../store/toastStore";
+import api from "../../lib/api";
+import { useToastStore } from "../../store/toastStore";
 function CreateDM({ setView }) {
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");

@@ -4,9 +4,8 @@ import clsx from "clsx";
 import JoinChat from "./JoinChat.jsx";
 import CreateDM from "./CreateDM.jsx";
 import NavigationPanel from "./NavigationPanel.jsx";
-import { useAuthStore } from "../../../store/authStore.js";
-import { useChatStore } from "../../../store/chatStore.js";
-// import clsx from "clsx";
+import { useAuthStore } from "../../store/authStore.js";
+import { useChatStore } from "../../store/chatStore.js";
 import { useState } from "react";
 
 function Sidebar() {
@@ -15,38 +14,29 @@ function Sidebar() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const resetChat = useChatStore((state) => state.reset);
+
   const handleLogout = async () => {
     resetChat();
     await logout();
   };
+
   return (
     <div
       className={clsx(
         "flex flex-col h-full",
-        "w-full lg:w-100 ",
+        "w-full lg:w-100",
         "overflow-y-auto",
-        "",
       )}
     >
-      <div className="p-4 flex justify-between items-center  border-b border-gray-300">
+      <div className="p-4 flex justify-between items-center border-b border-gray-300">
         <h1 className="text-xl font-bold">Chats</h1>
 
         <NavigationPanel
-          onLogout={() => {
-            handleLogout();
-          }}
-          onChatsClick={() => {
-            setView("chats");
-          }}
-          onCreateChatClick={() => {
-            setView("create");
-          }}
-          onJoinChatClick={() => {
-            setView("join");
-          }}
-          onCreateDMClick={() => {
-            setView("dm");
-          }}
+          onLogout={handleLogout}
+          onChatsClick={() => setView("chats")}
+          onCreateChatClick={() => setView("create")}
+          onJoinChatClick={() => setView("join")}
+          onCreateDMClick={() => setView("dm")}
           user={user}
         />
       </div>

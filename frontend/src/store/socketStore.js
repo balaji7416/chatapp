@@ -47,8 +47,6 @@ const useSocketStore = create((set, get) => ({
         if (res.success) {
           set({ socket, isConnected: true });
           console.log("-----------------");
-          //console.log("socket connected to server: ", res.data);
-          //console.log("rooms: ", res.data.conversations);
           console.log("session: ", res?.data?.sessionId);
           console.log("-----------------");
         } else {
@@ -120,7 +118,7 @@ const useSocketStore = create((set, get) => ({
     }
     set({ socket: null, isConnected: false, connectionError: null });
     await new Promise((resolve) => setTimeout(resolve, 200));
-    get.connect();
+    get().connect();
   },
 }));
 

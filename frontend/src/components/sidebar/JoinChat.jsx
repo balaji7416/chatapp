@@ -1,8 +1,8 @@
 import { useState } from "react";
 import clsx from "clsx";
-import { CLIENT } from "../../../lib/events";
-import { useSocketStore } from "../../../store/socketStore";
-import { useChatStore } from "../../../store/chatStore";
+import { CLIENT } from "../../lib/events";
+import { useSocketStore } from "../../store/socketStore";
+import { useChatStore } from "../../store/chatStore";
 function JoinChat({ setView }) {
   const [chatId, setChatId] = useState("");
   const [loading, setLoading] = useState(false);

@@ -1,14 +1,13 @@
-import { CLIENT } from "../../../lib/events.js";
+import { CLIENT } from "../../lib/events.js";
 import {
   useChatStore,
   useCurrentConversation,
   useCurrentMembers,
-} from "../../../store/chatStore.js";
-import { useSocketStore } from "../../../store/socketStore.js";
+} from "../../store/chatStore.js";
+import { useSocketStore } from "../../store/socketStore.js";
 import { ArrowLeft, MoreVertical } from "lucide-react";
-function ChatHeader({ onChatInfoClick, setView }) {
-  // const [openOptions, setOpenOptions] = useState(false);
 
+function ChatHeader({ onChatInfoClick, setView }) {
   const currConversation = useCurrentConversation();
   const members = useCurrentMembers();
   const isMembersLoading = useChatStore((state) => state.isMembersLoading);
@@ -16,20 +15,24 @@ function ChatHeader({ onChatInfoClick, setView }) {
   const setChat = useChatStore((state) => state.setChatChosen);
   const emit = useSocketStore((state) => state.emit);
   const isConnected = useSocketStore((state) => state.isConnected);
+
   if (!currConversation) return null;
+
   const handleLeave = async () => {
     await leaveConversation(currConversation?.id);
-    if (isConnected)
+    if (isConnected) {
       emit(CLIENT.LEAVE_CHAT, { conversationId: currConversation?.id });
-    // setOpenOptions(false);
+    }
   };
+
   const memberMsg = () => {
     if (members.length === 0) return "No members";
     if (members.length === 1) return `${members[0]?.username}(You)`;
     if (members.length === 2)
       return `${members[0]?.username} and ${members[1]?.username}`;
-    return `${(members[0]?.username, members[1]?.username)} and ${members.length - 2} others`;
+    return `${members[0]?.username}, ${members[1]?.username} and ${members.length - 2} others`;
   };
+
   return (
     <div className="flex items-center justify-between p-3 border-b-2 border-gray-200">
       <div className="flex-1 flex items-center gap-5">
@@ -49,7 +52,7 @@ function ChatHeader({ onChatInfoClick, setView }) {
           className="flex-1 flex gap-2 cursor-pointer hover:bg-base-200"
           onClick={onChatInfoClick}
         >
-          <div className="w-full ">
+          <div className="w-full">
             <h1 className="text-xl font-bold ">{currConversation.name}</h1>
             <p
               className={`truncate font-semibold text-xs text-base-content/45 flex-1 ${isMembersLoading && "skeleton"}`}

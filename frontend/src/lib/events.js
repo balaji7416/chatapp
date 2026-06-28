@@ -4,6 +4,7 @@
 export const CLIENT = {
   // Message events
   SEND_MESSAGE: "client:message:send",
+  MARK_MESSAGE_AS_READ: "client:message:read",
 
   // Chat/conversation events
   JOIN_CHAT: "client:chat:join",
@@ -18,6 +19,7 @@ export const CLIENT = {
 export const SERVER = {
   // Message events
   NEW_MESSAGE: "server:message:new",
+  MARK_MESSAGE_AS_READ: "server:message:read",
 
   // Chat events
   CHAT_JOINED: "server:chat:joined",

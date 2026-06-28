@@ -1,7 +1,7 @@
-import AuthPage from "./pages/auth/AuthPage.jsx";
-import MainPage from "./pages/main/MainPage.jsx";
+import AuthPage from "./pages/AuthPage.jsx";
+import MainPage from "./pages/MainPage.jsx";
 import { Route, Routes } from "react-router-dom";
-import Toast from "./components/Toast.jsx";
+import Toast from "./components/common/Toast.jsx";
 
 function App() {
   return (

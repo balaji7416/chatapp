@@ -2,11 +2,10 @@ import {
   useChatStore,
   useCurrentConversation,
   useCurrentMembers,
-} from "../../../store/chatStore.js";
-import { useAuthStore } from "../../../store/authStore.js";
-import { useEffect } from "react";
-import { ArrowLeft, Users, Copy, Check } from "lucide-react";
-import { useState } from "react";
+} from "../../store/chatStore.js";
+import { useAuthStore } from "../../store/authStore.js";
+import { useEffect, useState } from "react";
+import { Users, Copy, Check } from "lucide-react";
 
 function ChatInfo() {
   const [copied, setCopied] = useState(false);
@@ -47,12 +46,12 @@ function ChatInfo() {
           <div className="card-body">
             <h3 className="card-title text-lg">{currentConv.name}</h3>
             <div className="flex items-center justify-between gap-2">
-              <code className="text-xs text-base-content/60  flex-1 mt-2">
+              <code className="text-xs text-base-content/60 flex-1 mt-2">
                 ID: {currentConv.id}
               </code>
               <button
                 onClick={copyChatId}
-                className="btn btn-ghost btn-sm "
+                className="btn btn-ghost btn-sm"
                 title="Copy Chat ID"
               >
                 {copied ? <Check size={16} /> : <Copy size={16} />}

@@ -1,15 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { CLIENT } from "../lib/events.js";
 
 import api from "../lib/api.js";
 import { useToastStore } from "./toastStore.js";
 import { useAuthStore } from "./authStore.js";
 
+import { useSocketStore } from "./socketStore.js";
+
 const useChatStore = create(
   persist(
     (set, get) => ({
       //state
-
       conversations: [],
       currentConversationId: null,
       messages: {}, // {conversationId: [messages]}
@@ -100,6 +102,8 @@ const useChatStore = create(
           isMessagesLoading: false,
           isConversationsLoading: false,
           members: {},
+          chatChosen: false,
+          typingUsers: {},
         }),
 
       //loading actions
@@ -180,7 +184,6 @@ const useChatStore = create(
           set({ isMembersLoading: true });
           const res = await api.get(`/conversations/${conversationId}/members`);
           get().setMembers(conversationId, res?.data?.data);
-          console.log("Members: ", res?.data?.data);
         } catch (error) {
           console.error("Error in fetching members: ", error);
         } finally {
@@ -197,6 +200,7 @@ const useChatStore = create(
             c.id === conversationId ? { ...c, unread_count: 0 } : c,
           ),
         }));
+
         const msgs = get().messages[conversationId];
         if (!msgs || msgs.length === 0) {
           await get().fetchMessages(conversationId);
@@ -205,6 +209,9 @@ const useChatStore = create(
         if (!members || members.length === 0) {
           await get().fetchMembers(conversationId);
         }
+
+        //mark messages as read
+        useSocketStore.getState().emit(CLIENT.MARK_MESSAGE_AS_READ, { conversationId });
 
         try {
           await api.post(`/messages/${conversationId}/read`);
@@ -275,9 +282,7 @@ const useChatStore = create(
 
       // Partial state to persist
       partialize: (state) => ({
-        //conversations: state.conversations,
         currentConversationId: state.currentConversationId,
-        //messages: state.messages,
       }),
     },
   ),

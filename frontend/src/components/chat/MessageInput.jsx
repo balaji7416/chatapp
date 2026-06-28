@@ -1,7 +1,7 @@
-import { useChatStore } from "../../../store/chatStore.js";
-import { useSocketStore } from "../../../store/socketStore.js";
-import { useAuthStore } from "../../../store/authStore.js";
-import { CLIENT } from "../../../lib/events.js";
+import { useChatStore } from "../../store/chatStore.js";
+import { useSocketStore } from "../../store/socketStore.js";
+import { useAuthStore } from "../../store/authStore.js";
+import { CLIENT } from "../../lib/events.js";
 import clsx from "clsx";
 import { useState, useRef } from "react";
 
@@ -20,12 +20,9 @@ function MessageInput() {
     (state) => state.currentConversationId,
   );
 
-  // const addTyping = useChatStore((state) => state.addTypingUser);
-  // const removeTyping = useChatStore((state) => state.removeTypingUser);
-
   const handleTyping = () => {
     if (!currConversationId || !isConnected) return;
-    //addTyping(currConversationId, user);
+    
     emit(CLIENT.TYPING_START, { conversationId: currConversationId, user });
 
     //clear existing timeout
@@ -38,15 +35,18 @@ function MessageInput() {
       handleTypingStop();
     }, 2000);
   };
+
   const handleTypingStop = () => {
     if (!currConversationId || !isConnected) return;
+    
     emit(CLIENT.TYPING_STOP, { conversationId: currConversationId, user });
-    // removeTyping(currConversationId, user);
+    
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
   };
+
   const handleSend = async () => {
     if (!msg.trim()) return;
     if (!currConversationId) {
@@ -72,7 +72,7 @@ function MessageInput() {
 
     //emit immediately
     setmsg("");
-    //console.log("message sent: ", tempMsg);
+    
     if (!isConnected) {
       console.error("socket not connected, cannot send message");
       return;
@@ -80,13 +80,12 @@ function MessageInput() {
     emit(CLIENT.SEND_MESSAGE, tempMsg);
 
     //api call in the background
-
     const realMsg = await sendMessage(currConversationId, msg);
     const message = {
       conversationId: currConversationId,
       content: msg,
       replyToId: null,
-      messageId: realMsg.id,
+      messageId: realMsg?.id,
       user_id: user.id,
     };
 
@@ -109,7 +108,7 @@ function MessageInput() {
   };
 
   return (
-    <div className="flex items-centergap-3 p-3 gap-2">
+    <div className="flex items-center gap-2 p-3">
       <input
         type="text"
         onKeyDown={handleKeyPress}
@@ -117,9 +116,9 @@ function MessageInput() {
         onChange={(e) => setmsg(e.target.value)}
         className={clsx(
           "input validator",
-          " w-full md:max-w-150 rounded-md px-2 border-2 border-gray-200",
+          "w-full md:max-w-150 rounded-md px-2 border-2 border-gray-200",
           "transition-all duration-200 ease-in-out",
-          "focus:outline-none ",
+          "focus:outline-none",
           "hover:border-gray-400",
         )}
       />

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useChatStore } from "../../../store/chatStore.js";
+import { useChatStore } from "../../store/chatStore.js";
 import ConversationItem from "./ConversationItem.jsx";
 
 function ConversationList() {
