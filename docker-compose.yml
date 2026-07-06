@@ -1,0 +1,64 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: chatapp-backend
+    env_file:
+      - backend/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nginx:
+        condition: service_started
+    # run migrations and start backend
+    command: sh -c "npm run migrate && npm run dev"
+    networks:
+      - chatapp-net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: chatapp-frontend
+    env_file:
+      - frontend/.env
+    networks:
+      - chatapp-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: chatapp-postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: chatapp
+    ports:
+      - "5433:5432"
+    networks:
+      - chatapp-net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+    #health check for knowning whether DB is ready or not
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d chatapp"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: chatapp-nginx
+    ports:
+      - "80:80"
+    networks:
+      - chatapp-net
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+
+networks:
+  chatapp-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
