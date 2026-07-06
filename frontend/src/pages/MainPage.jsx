@@ -22,6 +22,7 @@ function MainPage() {
   const addMember = useChatStore((state) => state.addMember);
   const removeMember = useChatStore((state) => state.removeMember);
   const chatChosen = useChatStore((state) => state.chatChosen);
+  const updateMemberLastRead = useChatStore((state) => state.updateMemberLastRead);
 
   //to track if socket is already connected
   // const hasConnected = useRef(false);
@@ -46,11 +47,21 @@ function MainPage() {
       removeMember(data.conversationId, data.user);
     });
 
+    const cleanupRead = on(SERVER.MARK_MESSAGE_AS_READ, ({ data }) => {
+      if (data?.conversationId && data?.user_id) {
+        // last_read_at comes from NOW() on the server so it's always fresh
+        // Fall back to current time on the client if for any reason it's missing
+        const readAt = data.last_read_at || new Date().toISOString();
+        updateMemberLastRead(data.conversationId, data.user_id, readAt);
+      }
+    });
+
     return () => {
       cleanupJoin();
       cleanupLeft();
+      cleanupRead();
     };
-  }, [isSocketConnected, on, showInfo, addMember, removeMember]);
+  }, [isSocketConnected, on, showInfo, addMember, removeMember, updateMemberLastRead]);
 
   //if user token is refreshed, but socket is not reconnected
   useEffect(() => {

@@ -7,6 +7,7 @@ import { useToastStore } from "./toastStore.js";
 import { useAuthStore } from "./authStore.js";
 
 import { useSocketStore } from "./socketStore.js";
+import { add } from "date-fns";
 
 const useChatStore = create(
   persist(
@@ -26,6 +27,29 @@ const useChatStore = create(
       isMembersLoading: false,
 
       //actions
+      updateMemberLastRead: (conversationId, userId, lastReadAt) => {
+        set((state) => ({
+          members: {
+            ...state.members,
+            [conversationId]: state.members[conversationId]?.map((m) =>
+              m.id === userId ? { ...m, last_read_at: lastReadAt } : m
+            ),
+          },
+        }));
+      },
+
+      markAsRead: async (conversationId) => {
+        useSocketStore
+          .getState()
+          .emit(CLIENT.MARK_MESSAGE_AS_READ, { conversationId });
+
+        try {
+          await api.post(`/messages/${conversationId}/read`);
+        } catch (error) {
+          console.error("Error in marking messages as read: ", error);
+        }
+      },
+
       setChatAreaView: (view) => set({ chatAreaView: view }),
       setChatChosen: (value) => set({ chatChosen: value }),
       setConversations: (conversations) => set({ conversations }),
@@ -211,13 +235,7 @@ const useChatStore = create(
         }
 
         //mark messages as read
-        useSocketStore.getState().emit(CLIENT.MARK_MESSAGE_AS_READ, { conversationId });
-
-        try {
-          await api.post(`/messages/${conversationId}/read`);
-        } catch (error) {
-          console.error("Error in marking messages as read: ", error);
-        }
+        await get().markAsRead(conversationId);
       },
 
       leaveConversation: async (conversationId) => {

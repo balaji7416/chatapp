@@ -4,7 +4,7 @@ import {
 } from "../../services/message.service.js";
 
 const sendMessageHandler = ({ socket, data }) => {
-  const { conversationId, messageId, content, replyToId = null } = data;
+  const { conversationId, messageId, content, replyToId = null, created_at } = data;
 
   if (!conversationId) {
     return {
@@ -21,7 +21,7 @@ const sendMessageHandler = ({ socket, data }) => {
       content,
       replyToId,
       user_id: socket.user.id,
-      created_at: new Date().toISOString(),
+      created_at: created_at || new Date().toISOString(),
     },
   });
 
@@ -96,13 +96,14 @@ const markMessageAsRead = async ({ io, socket, data }) => {
     throw new Error("conversation id is required");
   }
 
-  await markMessagesAsReadService(conversationId, socket?.user.id);
+  const result = await markMessagesAsReadService(conversationId, socket?.user.id);
 
   io.to(`conversation:${conversationId}`).emit(SERVER.MARK_MESSAGE_AS_READ, {
     success: true,
     data: {
       conversationId,
       user_id: socket?.user?.id,
+      last_read_at: result?.last_read_at,
       message: "messages marked as read",
     },
   });
@@ -110,6 +111,7 @@ const markMessageAsRead = async ({ io, socket, data }) => {
   return {
     conversationId,
     userId: socket?.user?.id,
+    last_read_at: result?.last_read_at,
     message: "messages marked as read",
   };
 };

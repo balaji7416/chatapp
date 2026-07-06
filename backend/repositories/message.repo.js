@@ -83,7 +83,7 @@ const markMessagesAsRead = async (conversation_id, user_id) => {
     ) 
     where conversation_id = $1
     and user_id = $2
-    returning *
+    returning *, now() as last_read_at
   `;
   const { rows } = await pool.query(query, [conversation_id, user_id]);
   return rows[0];

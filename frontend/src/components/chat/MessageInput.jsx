@@ -72,25 +72,23 @@ function MessageInput() {
 
     //emit immediately
     setmsg("");
-    
-    if (!isConnected) {
-      console.error("socket not connected, cannot send message");
-      return;
-    }
-    emit(CLIENT.SEND_MESSAGE, tempMsg);
 
     //api call in the background
     const realMsg = await sendMessage(currConversationId, msg);
-    const message = {
-      conversationId: currConversationId,
-      content: msg,
-      replyToId: null,
-      messageId: realMsg?.id,
-      user_id: user.id,
-    };
 
     if (realMsg) {
-      replaceMessage(currConversationId, tempId, message);
+      if (isConnected) {
+        const socketMsg = {
+          conversationId: currConversationId,
+          content: msg,
+          replyToId: null,
+          messageId: realMsg.id,
+          user_id: user.id,
+          created_at: realMsg.created_at, // Use DB timestamp
+        };
+        emit(CLIENT.SEND_MESSAGE, socketMsg);
+      }
+      replaceMessage(currConversationId, tempId, realMsg);
     } else {
       //remove the msg if failed to send
       removeMessage(currConversationId, tempId);

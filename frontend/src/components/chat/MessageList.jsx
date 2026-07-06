@@ -3,6 +3,7 @@ import { SERVER } from "../../lib/events.js";
 
 import { useChatStore, useCurrentMessages } from "../../store/chatStore.js";
 import { useSocketStore } from "../../store/socketStore.js";
+import { useAuthStore } from "../../store/authStore.js";
 
 import MessageBubble from "./MessageBubble.jsx";
 import TypingIndicator from "./TypingIndicator.jsx";
@@ -16,6 +17,7 @@ function MessageList() {
   const removeTypingUser = useChatStore((state) => state.removeTypingUser);
   const on = useSocketStore((state) => state.on);
   const isConnected = useSocketStore((state) => state.isConnected);
+  const user = useAuthStore((state) => state.user);
 
   const msgsEndRef = useRef(null);
 
@@ -42,6 +44,17 @@ function MessageList() {
       const message = res.data;
       const conversationId = message?.conversationId;
       addMessage(conversationId, message);
+
+      // If this message is in the active conversation, immediately mark as read:
+      // 1. Update our own last_read_at locally (so the sender sees ticks flip right away via the socket event)
+      // 2. Emit markAsRead so the DB and sender's store get updated
+      if (conversationId === currentConvId && user?.id) {
+        const readAt = message.created_at || new Date().toISOString();
+        useChatStore
+          .getState()
+          .updateMemberLastRead(conversationId, user.id, readAt);
+        useChatStore.getState().markAsRead(conversationId);
+      }
     };
     const onTypingStart = ({ data }) => {
       if (data.conversationId === currentConvId && data.user) {
@@ -74,6 +87,7 @@ function MessageList() {
     currentConvId,
     addTypingUser,
     removeTypingUser,
+    user,
   ]);
 
   //socket event handlers
