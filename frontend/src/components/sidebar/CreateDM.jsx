@@ -2,6 +2,8 @@ import clsx from "clsx";
 import { useState } from "react";
 import api from "../../lib/api";
 import { useToastStore } from "../../store/toastStore";
+import { useSocketStore } from "../../store/socketStore";
+import { CLIENT } from "../../lib/events";
 function CreateDM({ setView }) {
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
@@ -13,10 +15,13 @@ function CreateDM({ setView }) {
     if (!username.trim()) return;
     try {
       setLoading(true);
-      await api.post("/conversations", {
+      const response = await api.post("/conversations", {
         members: [username],
         isGroup: false,
       });
+      if (response?.data?.data?.id) {
+        useSocketStore.getState().emit(CLIENT.CHAT_JOIN, { conversationId: response.data.data.id });
+      }
       showSuccess("DM created successfully");
       setView("chats");
     } catch (e) {

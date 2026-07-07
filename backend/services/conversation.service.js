@@ -68,8 +68,8 @@ const joinConversationService = async (conversation_id, user_id) => {
   if (!conversation) {
     throw new ApiError(404, "Conversation not found");
   }
-  if (!conversation?.isGroup)
-    throw new ApiError(400, "cannot join one-one chat");
+  const isGroup = conversation?.is_group || conversation?.isGroup;
+  if (!isGroup) throw new ApiError(400, "cannot join one-one chat");
 
   const user = await findUserById(user_id);
   if (!user) throw new ApiError(400, "User does not exist");

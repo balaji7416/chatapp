@@ -21,13 +21,7 @@ function Sidebar() {
   };
 
   return (
-    <div
-      className={clsx(
-        "flex flex-col h-full",
-        "w-full lg:w-100",
-        "overflow-y-auto",
-      )}
-    >
+    <div className={clsx("flex flex-col h-full", "overflow-y-auto")}>
       <div className="p-4 flex justify-between items-center border-b border-gray-300">
         <h1 className="text-xl font-bold">Chats</h1>
 

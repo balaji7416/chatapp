@@ -1,43 +1,58 @@
 // socket/constants/events.js
 
-// Events client sends to server
+// ============================================
+// CLIENT EVENTS (Client → Server)
+// ============================================
 export const CLIENT = {
   // Message events
-  SEND_MESSAGE: "client:message:send",
+  MESSAGE_SEND: "client:message:send",
+  MESSAGE_READ: "client:message:read",
 
-  // Chat/conversation events
-  JOIN_CHAT: "client:chat:join",
-  LEAVE_CHAT: "client:chat:leave",
-  CREATE_CHAT: "client:chat:create",
+  // Chat/Conversation events
+  CHAT_JOIN: "client:chat:join",
+  CHAT_LEAVE: "client:chat:leave",
+  CHAT_CREATE: "client:chat:create",
 
   // Typing events
   TYPING_START: "client:typing:start",
   TYPING_STOP: "client:typing:stop",
-
-  MARK_MESSAGE_AS_READ: "client:message:read",
 };
 
-// Events server sends to client
+// ============================================
+// SERVER EVENTS (Server → Client)
+// ============================================
 export const SERVER = {
   // Message events
-  NEW_MESSAGE: "server:message:new",
-  MARK_MESSAGE_AS_READ: "server:message:read",
+  MESSAGE_NEW: "server:message:new",
+  MESSAGE_READ: "server:message:read",
 
   // Chat events
   CHAT_JOINED: "server:chat:joined",
   CHAT_LEFT: "server:chat:left",
+  CHAT_CREATED: "server:chat:created",
 
   // Typing events
   TYPING_START: "server:typing:start",
   TYPING_STOP: "server:typing:stop",
 
-  // System
+  // User presence
+  USER_JOINED_CHAT: "server:user:joined-chat",
+  USER_LEFT_CHAT: "server:user:left-chat",
+
+  // Session management
   SESSION_EXPIRED: "server:session:expired",
+
+  // System
 };
 
-// Internal Socket.IO events
+// ============================================
+// INTERNAL SOCKET.IO EVENTS (Built-in)
+// ============================================
 export const INTERNAL = {
+  CONNECTED: "connected",
+  DISCONNECTED: "disconnected",
   CONNECTION: "connection",
   DISCONNECT: "disconnect",
   CONNECT_ERROR: "connect_error",
+  RECONNECT: "reconnect",
 };

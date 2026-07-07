@@ -39,11 +39,11 @@ const registerUserService = async ({ username, email, password }) => {
   const salt = await bcrypt.genSalt(10);
   const password_hash = await bcrypt.hash(password, salt);
   const user = await createUser({ username, email, password_hash });
-  const access_token = generateAccessToken(user.id);
-  const refresh_token = generateRefreshToken(user.id);
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
 
-  await updateRefreshToken(user.id, refresh_token);
-  return { user, access_token, refresh_token };
+  await updateRefreshToken(user.id, refreshToken);
+  return { user, accessToken, refreshToken };
 };
 
 //login user service
@@ -59,11 +59,11 @@ const loginUserService = async (email, password) => {
     throw new ApiError(400, "Invalid password");
   }
 
-  const access_token = generateAccessToken(user.id);
-  const refresh_token = generateRefreshToken(user.id);
-  await updateRefreshToken(user.id, refresh_token);
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
+  await updateRefreshToken(user.id, refreshToken);
 
-  return { user, access_token, refresh_token };
+  return { user, accessToken, refreshToken };
 };
 
 //logout user
@@ -108,7 +108,7 @@ const refreshAccessTokenService = async (token) => {
   const refresh_token = generateRefreshToken(user.id);
   await updateRefreshToken(user.id, refresh_token);
 
-  return { access_token, refresh_token };
+  return { accessToken: access_token, refreshToken: refresh_token };
 };
 
 export {

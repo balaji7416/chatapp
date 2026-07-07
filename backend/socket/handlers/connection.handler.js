@@ -1,50 +1,85 @@
+// socket/handlers/connection.handler.js
 import { findUserConversations } from "../../repositories/conversation.repo.js";
 import { createSession } from "../../services/session.service.js";
 
-const connectionHandler = async ({ io, socket, data }) => {
-  //validation
+/**
+ * Handle new socket connection
+ * - Joins user to their personal room
+ * - Fetches and joins user's conversation rooms
+ * - Creates a user session
+ */
+const connectionHandler = async ({ io, socket }) => {
+  // Validate user exists
   if (!socket?.user) {
-    return {
-      success: false,
-      error: "User not found",
-    };
+    throw new Error("User not authenticated");
+  }
+
+  if (!socket?.user?.id) {
+    throw new Error("User ID is missing");
   }
 
   try {
-    //join personal room
-    socket.join(`user:${socket?.user.id}`);
+    const userId = socket.user.id;
+    const username = socket.user.username;
 
-    //get user conversations
-    const conversations = await findUserConversations(socket?.user.id);
+    // 1. Join user's personal room
+    const userRoom = `user:${userId}`;
+    socket.join(userRoom);
 
-    //join all conversation rooms
-    const joinedRooms = [];
-    conversations.forEach((conversation) => {
-      socket.join(`conversation:${conversation?.id}`);
-      joinedRooms.push(conversation?.name);
-    });
+    // 2. Get user's conversations
+    const conversations = await findUserConversations(userId);
 
-    //create user session
-    const session = await createSession(socket?.user.id, socket);
+    // 3. Join all conversation rooms
+    const joinedRoomIds = [];
+    const joinedRoomNames = [];
 
-    //log successful connection
-    console.log(`user ${socket?.user.id} connected`);
-    console.log(`rooms: ${joinedRooms.length}\tSession: ${session?.id}`);
+    if (conversations && Array.isArray(conversations)) {
+      for (const conversation of conversations) {
+        if (conversation?.id) {
+          const roomId = `conversation:${conversation.id}`;
+          socket.join(roomId);
+          joinedRoomIds.push(conversation.id);
 
+          if (conversation?.name) {
+            joinedRoomNames.push(conversation.name);
+          }
+        }
+      }
+    }
+
+    // 4. Create user session
+    const session = await createSession(userId, socket);
+
+    if (!session) {
+      throw new Error("Failed to create user session");
+    }
+
+    // Store session ID on socket for later use
+    socket.sessionId = session.id;
+
+    // Log successful connection
+    console.log(`✅ User ${username} (${userId}) connected`);
+    console.log(`   Rooms joined: ${joinedRoomIds.length}`);
+    console.log(`   Session ID: ${session.id}`);
+
+    // Return flat response
     return {
-      success: true,
-      data: {
-        userId: socket?.user.id,
-        conversations: joinedRooms,
-        sessionId: session?.id,
-      },
+      userId,
+      username,
+      sessionId: session.id,
+      joinedRooms: joinedRoomIds,
+      joinedRoomNames,
+      joinedAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("Error in connection handler: ", error);
-    return {
-      success: false,
-      error: error.message || "connection failed",
-    };
+    console.error("❌ Connection handler error:", {
+      error: error.message,
+      userId: socket?.user?.id,
+      socketId: socket?.id,
+      stack: error.stack,
+    });
+
+    throw new Error(error.message || "Connection failed");
   }
 };
 

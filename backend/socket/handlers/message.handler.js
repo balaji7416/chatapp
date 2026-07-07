@@ -1,124 +1,182 @@
 import { SERVER } from "../constants/events.js";
-import {
-  markMessagesAsReadService,
-} from "../../services/message.service.js";
+import { markMessagesAsReadService } from "../../services/message.service.js";
 
-const sendMessageHandler = ({ socket, data }) => {
-  const { conversationId, messageId, content, replyToId = null, created_at } = data;
+/**
+ * Send a message to a conversation
+ * NOTE: This handler only broadcasts the message to the room.
+ * Message creation should be handled by REST API.
+ */
+const sendMessageHandler = async ({ socket, data }) => {
+  const {
+    conversationId,
+    messageId,
+    content,
+    replyToId = null,
+    createdAt,
+  } = data;
 
+  // Validate required fields
   if (!conversationId) {
-    return {
-      success: false,
-      error: "conversation id is required",
-    };
+    throw new Error("Conversation ID is required");
   }
 
-  socket.to(`conversation:${conversationId}`).emit(SERVER.NEW_MESSAGE, {
+  if (!messageId) {
+    throw new Error("Message ID is required");
+  }
+
+  if (!content || content.trim().length === 0) {
+    throw new Error("Message content cannot be empty");
+  }
+
+  // Check if user is in the conversation room
+  const rooms = Array.from(socket.rooms);
+  const conversationRoom = `conversation:${conversationId}`;
+
+  if (!rooms.includes(conversationRoom)) {
+    throw new Error("You are not a member of this conversation");
+  }
+
+  // Broadcast message to everyone in the conversation
+  socket.to(conversationRoom).emit(SERVER.MESSAGE_NEW, {
     success: true,
-    data: {
-      messageId,
-      conversationId,
-      content,
-      replyToId,
-      user_id: socket.user.id,
-      created_at: created_at || new Date().toISOString(),
-    },
+    messageId,
+    conversationId,
+    content,
+    replyToId,
+    userId: socket.user.id,
+    username: socket.user.username,
+    createdAt: createdAt || new Date().toISOString(),
   });
 
+  // Return flat response
   return {
-    success: true,
-    data: {
-      messageId,
-      content,
-      createdAt: new Date().toISOString(),
-    },
+    messageId,
+    conversationId,
+    content,
+    replyToId,
+    userId: socket.user.id,
+    createdAt: new Date().toISOString(),
   };
 };
 
-const typingStartHandler = ({ socket, data }) => {
+/**
+ * Handle typing start event
+ */
+const typingStartHandler = async ({ socket, data }) => {
   const { conversationId, user } = data;
+
   if (!conversationId) {
-    return {
-      success: false,
-      error: "conversation id is required",
-    };
+    throw new Error("Conversation ID is required");
   }
 
-  socket.to(`conversation:${conversationId}`).emit(SERVER.TYPING_START, {
+  // Check if user is in the conversation room
+  const rooms = Array.from(socket.rooms);
+  const conversationRoom = `conversation:${conversationId}`;
+
+  if (!rooms.includes(conversationRoom)) {
+    throw new Error("You are not a member of this conversation");
+  }
+
+  // Broadcast typing start to everyone in the conversation
+  socket.to(conversationRoom).emit(SERVER.TYPING_START, {
     success: true,
-    data: {
-      conversationId,
-      user,
-      message: `${user?.username} started typing`,
-    },
+    conversationId,
+    user,
+    timestamp: new Date().toISOString(),
   });
 
+  // Return flat response
   return {
-    success: true,
-    data: {
-      conversationId,
-      message: "started typing",
-    },
+    conversationId,
+    userId: socket.user.id,
+    username: socket.user.username,
+    timestamp: new Date().toISOString(),
   };
 };
 
-const typingStopHandler = ({ socket, data }) => {
-  const { conversationId, user } = data;
+/**
+ * Handle typing stop event
+ */
+const typingStopHandler = async ({ socket, data }) => {
+  const { conversationId } = data;
+
   if (!conversationId) {
-    return {
-      success: false,
-      error: "conversation id is required",
-    };
+    throw new Error("Conversation ID is required");
   }
 
-  socket.to(`conversation:${conversationId}`).emit(SERVER.TYPING_STOP, {
+  // Check if user is in the conversation room
+  const rooms = Array.from(socket.rooms);
+  const conversationRoom = `conversation:${conversationId}`;
+
+  if (!rooms.includes(conversationRoom)) {
+    throw new Error("You are not a member of this conversation");
+  }
+
+  // Broadcast typing stop to everyone in the conversation
+  socket.to(conversationRoom).emit(SERVER.TYPING_STOP, {
     success: true,
-    data: {
-      conversationId,
-      user,
-      message: `${user?.username} stopped typing`,
-    },
+    conversationId,
+    userId: socket.user.id,
+    username: socket.user.username,
+    timestamp: new Date().toISOString(),
   });
 
+  // Return flat response
   return {
-    success: true,
-    data: {
-      conversationId,
-      message: "stopped typing",
-    },
+    conversationId,
+    userId: socket.user.id,
+    username: socket.user.username,
+    timestamp: new Date().toISOString(),
   };
 };
 
+/**
+ * Mark messages as read in a conversation
+ */
 const markMessageAsRead = async ({ io, socket, data }) => {
   const { conversationId } = data;
 
   if (!conversationId) {
-    throw new Error("conversation id is required");
+    throw new Error("Conversation ID is required");
   }
 
-  const result = await markMessagesAsReadService(conversationId, socket?.user.id);
+  // Check if user is in the conversation room
+  const rooms = Array.from(socket.rooms);
+  const conversationRoom = `conversation:${conversationId}`;
 
-  io.to(`conversation:${conversationId}`).emit(SERVER.MARK_MESSAGE_AS_READ, {
+  if (!rooms.includes(conversationRoom)) {
+    throw new Error("You are not a member of this conversation");
+  }
+
+  // Mark messages as read in database
+  const result = await markMessagesAsReadService(
+    conversationId,
+    socket.user.id,
+  );
+
+  // Broadcast to everyone in the conversation that this user read messages
+  io.to(conversationRoom).emit(SERVER.MESSAGE_READ, {
     success: true,
-    data: {
-      conversationId,
-      user_id: socket?.user?.id,
-      last_read_at: result?.last_read_at,
-      message: "messages marked as read",
-    },
+    conversationId,
+    userId: socket.user.id,
+    username: socket.user.username,
+    lastReadAt:
+      result?.last_read_at || result?.lastReadAt || new Date().toISOString(),
   });
 
+  // Return flat response
   return {
     conversationId,
-    userId: socket?.user?.id,
-    last_read_at: result?.last_read_at,
-    message: "messages marked as read",
+    userId: socket.user.id,
+    username: socket.user.username,
+    lastReadAt: result?.lastReadAt || new Date().toISOString(),
+    messageId,
   };
 };
 
 export {
   sendMessageHandler,
-  markMessageAsRead,
   typingStartHandler,
   typingStopHandler,
+  markMessageAsRead,
 };

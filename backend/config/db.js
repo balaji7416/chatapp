@@ -3,14 +3,25 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // create a pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
 
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-});
+let pool;
+if (process.env.NODE_ENV === "development") {
+  pool = new Pool({
+    user: "postgres",
+    password: "Nellore@2811",
+    database: "chatapp",
+    port: 5432,
+  });
+} else {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  });
+}
 
 pool.on("connect", () => {
   console.log("connected to the database");

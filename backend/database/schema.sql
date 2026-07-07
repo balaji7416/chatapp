@@ -5,7 +5,7 @@ create extension if not exists "uuid-ossp";
 -- users table 
 create table
     users (
-        -- identity
+        -- 
         id uuid primary key DEFAULT uuid_generate_v4 (),
         email varchar(255) unique not null,
         username varchar(80) unique not null,
@@ -30,6 +30,7 @@ create table
         is_group boolean default FALSE, -- false for 1-on-1 DMs
         created_by uuid references users (id) on delete set null,
         last_message_id uuid,  -- add foreign key after messages table (for showing last message to all group members)
+        last_message_content text, ---denormalized for showing last message to all group members
         last_message_at timestamp default current_timestamp,
         created_at timestamp default current_timestamp,
         updated_at timestamp default current_timestamp
@@ -44,6 +45,7 @@ create table
         role varchar(30) default 'member', --'admin', 'member'
         unread_count int default 0, --for notification badges 
         last_read_message_id uuid ,-- for tracking unread messages
+        last_read_at timestamp default null,
         joined_at timestamp default current_timestamp,
         primary key (conversation_id, user_id)
     );
@@ -54,7 +56,7 @@ create table
     messages (
         id uuid primary key default uuid_generate_v4 (),
         conversation_id uuid references conversations (id) on delete cascade,
-        user_id uuid references Users (id) on delete set null,
+        user_id uuid references users (id) on delete set null,
         reply_to_id uuid references messages (id) on delete set null, --for threaded replies
         content text not null,
         created_at timestamp default current_timestamp,
@@ -74,10 +76,12 @@ create table user_sessions (
 );
 
 --foreign key constraints
+alter table conversations drop constraint if exists fk_last_message;
 alter table conversations
 add constraint fk_last_message 
 foreign key (last_message_id) references messages(id) on delete set null;
 
+alter table conversation_members drop constraint if exists fk_last_read_message;
 alter table conversation_members
 add constraint fk_last_read_message
 foreign key (last_read_message_id) references messages(id) on delete set null;
@@ -118,13 +122,13 @@ returns trigger as $$
 begin
     -- update conversation 
     update conversations 
-    set last_message_id = new.id, last_message_at = new.created_at
+    set last_message_id = new.id, last_message_at = new.created_at, last_message_content = new.content
     where id = new.conversation_id;
 
     -- Increment unread_count for everyone EXCEPT the sender
     update conversation_members
     set unread_count = unread_count + 1
-    where conversation_id = new.conversation_id and user_id !=new.user_id;
+    where conversation_id = new.conversation_id and user_id != new.user_id;
 
     return new;
 end;
