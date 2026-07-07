@@ -60,7 +60,7 @@ export const useSocketStore = create((set, get) => ({
     });
 
     // Create socket
-    const socket_url = "/"; // for docker
+    const socket_url = import.meta.env.VITE_SOCKET_URL || "/"; //for docker
     // import.meta.env.VITE_ENV === "development"
     //   ? "/api"
     //   : import.meta.env.VITE_SOCKET_URL;
