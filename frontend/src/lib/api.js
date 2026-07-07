@@ -7,10 +7,12 @@ import { useSocketStore } from "../store/socketStore.js";
 // CONFIGURATION
 // ============================================
 
-const API_BASE_URL =
-  import.meta.env.VITE_ENV === "development"
-    ? "http://localhost:5000/api"
-    : import.meta.env.VITE_API_URL;
+// const API_BASE_URL =
+//   import.meta.env.VITE_ENV === "development"
+//     ? "/api"
+//     : import.meta.env.VITE_API_URL;
+
+const API_BASE_URL = "/api"; // for docker
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -3,7 +3,7 @@ create extension if not exists "uuid-ossp";
 
 
 -- users table 
-create table
+create table if not exists
     users (
         -- 
         id uuid primary key DEFAULT uuid_generate_v4 (),
@@ -23,7 +23,7 @@ create table
 
 
 -- conversations table
-create table
+create table if not exists
     conversations (
         id uuid primary key default uuid_generate_v4 (),
         name varchar(100) default null, --nullable for 1-on-1 DMs
@@ -38,7 +38,7 @@ create table
 
 
 -- conversation_members table
-create table
+create table if not exists
     conversation_members (
         conversation_id uuid references conversations (id) on delete cascade,
         user_id uuid references users (id) on delete cascade,
@@ -52,7 +52,7 @@ create table
 
 
 -- messages table
-create table
+create table if not exists
     messages (
         id uuid primary key default uuid_generate_v4 (),
         conversation_id uuid references conversations (id) on delete cascade,
@@ -64,7 +64,7 @@ create table
     );
 
 -- user sessions table
-create table user_sessions (
+create table if not exists user_sessions (
     id uuid primary key default uuid_generate_v4 (),
     user_id uuid references users(id) on delete cascade,
     socket_id text not null unique, 

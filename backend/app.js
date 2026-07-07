@@ -12,7 +12,11 @@ import globalErrorHandler from "./middleware/global.error.middleware.js";
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL];
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+  "http://localhost",
+];
 
 // cross origin resource sharing
 app.use(
