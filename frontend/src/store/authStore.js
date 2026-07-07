@@ -1,118 +1,173 @@
+// store/authStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "../lib/api.js";
 
-const useAuthStore = create(
-  persist((set, get) => ({
-    //state
-    user: null,
-    access_token: null,
-    refresh_token: null,
-    isAuthenticated: false,
-    isAuthLoading: false,
-    authError: null,
+export const useAuthStore = create(
+  persist(
+    (set, get) => ({
+      // ===== State =====
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      isAuthenticated: false,
+      isLoading: false, //
+      error: null,
 
-    //actions
+      // ===== Actions =====
 
-    setLoginState: (state) => {
-      set({
-        user: state?.user,
-        access_token: state?.access_token,
-        refresh_token: state?.refresh_token,
-        isAuthenticated: state?.isAuthenticated,
-      });
-    },
-
-    login: async (data_) => {
-      set({ isAuthLoading: true, authError: null });
-      try {
-        if (get().isAuthenticated) {
-          throw new Error("Already logged in");
-        }
-        const res = await api.post("/auth/login", data_);
-        const data = res.data.data;
+      setAuth: (data) => {
         set({
-          user: data.user,
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-          isAuthenticated: true,
+          user: data?.user || null,
+          accessToken: data?.accessToken || data?.access_token || null,
+          refreshToken: data?.refreshToken || data?.refresh_token || null,
+          isAuthenticated: !!data?.user && !!data?.accessToken,
+          error: null,
         });
-        return { success: true };
-      } catch (error) {
-        console.error("Error in login: ", error);
-        const errMsg =
-          error.response?.data?.message || error.message || "Login failed";
-        set({ authError: errMsg });
-        return { success: false, error: errMsg };
-      } finally {
-        set({ isAuthLoading: false });
-      }
-    },
+      },
 
-    register: async (data_) => {
-      set({ isAuthLoading: true, authError: null });
-      try {
-        if (get().isAuthenticated) {
-          throw new Error("Already logged in");
-        }
-        const res = await api.post("/auth/register", data_);
-        const data = res.data.data;
-        set({
-          user: data.user,
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-          isAuthenticated: true,
-        });
-        return { success: true };
-      } catch (error) {
-        console.error("Error in register: ", error);
-        const errMsg =
-          error.response?.data?.message || error.message || "Register failed";
-
-        set({ authError: errMsg });
-        return { success: false, error: errMsg };
-      } finally {
-        set({ isAuthLoading: false });
-      }
-    },
-
-    logout: async () => {
-      set({ isAuthLoading: true, authError: null });
-      try {
-        await api.post("/auth/logout");
+      // Clear auth
+      clearAuth: () => {
         set({
           user: null,
-          access_token: null,
-          refresh_token: null,
+          accessToken: null,
+          refreshToken: null,
           isAuthenticated: false,
+          isLoading: false,
+          error: null,
         });
-        console.log("logged out, user: ", get().user);
-        return { success: true };
-      } catch (error) {
-        console.log("Error in logout: ", error);
-        const errMsg =
-          error.response?.data?.message || error.message || "Logout failed";
+      },
 
-        set({ authError: errMsg });
-        return { success: false, error: errMsg };
-      } finally {
-        set({ isAuthLoading: false });
-      }
-    },
+      //Login
+      login: async (credentials) => {
+        set({ isLoading: true, error: null });
 
-    clearError: () => set({ authError: null }),
-  })),
-  {
-    name: "auth-storage",
-    partialize: (state) => ({
-      user: state.user,
-      access_token: state.access_token,
-      refresh_token: state.refresh_token,
-      isAuthenticated: state.isAuthenticated,
+        try {
+          if (get().isAuthenticated) {
+            throw new Error("Already logged in");
+          }
 
-      //no need to persist loading/error states
+          const res = await api.post("/auth/login", credentials);
+          const data = res.data.data;
+
+          set({
+            user: data.user,
+            accessToken: data.access_token || data.accessToken,
+            refreshToken: data.refresh_token || data.refreshToken,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+
+          return { success: true };
+        } catch (error) {
+          console.error("[AuthStore] Login error:", error);
+          const errorMessage =
+            error.response?.data?.message || error.message || "Login failed";
+          set({ isLoading: false, error: errorMessage });
+          return { success: false, error: errorMessage };
+        }
+      },
+
+      // Register
+      register: async (userData) => {
+        set({ isLoading: true, error: null });
+
+        try {
+          if (get().isAuthenticated) {
+            throw new Error("Already logged in");
+          }
+
+          const res = await api.post("/auth/register", userData);
+          const data = res.data.data;
+
+          set({
+            user: data.user,
+            accessToken: data.access_token || data.accessToken,
+            refreshToken: data.refresh_token || data.refreshToken,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+
+          return { success: true };
+        } catch (error) {
+          console.error("[AuthStore] Register error:", error);
+          const errorMessage =
+            error.response?.data?.message ||
+            error.message ||
+            "Registration failed";
+          set({ isLoading: false, error: errorMessage });
+          return { success: false, error: errorMessage };
+        }
+      },
+
+      // Logout
+      logout: async () => {
+        set({ isLoading: true, error: null });
+
+        try {
+          await api.post("/auth/logout").catch(() => {
+            // Ignore API errors, just clear local state
+            console.warn("[AuthStore] Logout API failed, clearing local state");
+          });
+
+          set({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+          });
+
+          return { success: true };
+        } catch (error) {
+          console.error("[AuthStore] Logout error:", error);
+          // Even on error, clear local state
+          set({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+          });
+          return { success: false, error: error.message || "Logout failed" };
+        }
+      },
+
+      //  Clear error
+      clearError: () => set({ error: null }),
+
+      // ✅ Reset
+      reset: () => {
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        });
+      },
     }),
-  },
+    {
+      name: "auth-storage",
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    },
+  ),
 );
 
-export { useAuthStore };
+export const useCurrentUser = () => useAuthStore((state) => state.user);
+export const useIsAuthenticated = () =>
+  useAuthStore((state) => state.isAuthenticated);
+export const useIsAuthLoading = () => useAuthStore((state) => state.isLoading);
+export const useAuthError = () => useAuthStore((state) => state.error);
+
+export default useAuthStore;

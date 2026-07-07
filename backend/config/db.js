@@ -3,22 +3,25 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // create a pool
-// const pool = new Pool({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: { rejectUnauthorized: false },
 
-//   max: 20,
-//   idleTimeoutMillis: 30000,
-//   connectionTimeoutMillis: 10000,
-// });
+let pool;
+if (process.env.NODE_ENV === "development") {
+  pool = new Pool({
+    user: "postgres",
+    password: "Nellore@2811",
+    database: "chatapp",
+    port: 5432,
+  });
+} else {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
 
-const pool = new Pool({
-  user: process.env.DB_USER || "postgres",
-  host: process.env.DB_HOST || "postgres",
-  database: process.env.DB_NAME || "chatapp",
-  password: process.env.DB_PASSWORD || "postgres",
-  port: process.env.DB_PORT || 5432,
-});
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  });
+}
 
 export const testDB = async () => {
   const client = await pool.connect();

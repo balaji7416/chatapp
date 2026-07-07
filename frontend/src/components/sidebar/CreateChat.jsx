@@ -2,6 +2,8 @@ import { useState } from "react";
 import clsx from "clsx";
 import api from "../../lib/api";
 import { useToastStore } from "../../store/toastStore";
+import { useSocketStore } from "../../store/socketStore";
+import { CLIENT } from "../../lib/events";
 import { Plus } from "lucide-react";
 
 function CreateChat({ setView }) {
@@ -35,11 +37,14 @@ function CreateChat({ setView }) {
     e.preventDefault();
     try {
       setLoading(true);
-      await api.post("/conversations", {
+      const response = await api.post("/conversations", {
         name: chatName,
         isGroup: true,
         members,
       });
+      if (response?.data?.data?.id) {
+        useSocketStore.getState().emit(CLIENT.CHAT_JOIN, { conversationId: response.data.data.id });
+      }
       showSuccess("Chat created successfully");
       setChatName("");
       setMembers([]);

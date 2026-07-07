@@ -7,7 +7,7 @@ function JoinChat({ setView }) {
   const [chatId, setChatId] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isConnected = useSocketStore((state) => state.isConnected);
+  const isConnected = useSocketStore((state) => state.connectionState) === "connected";
   const emit = useSocketStore((state) => state.emit);
   const joinConversation = useChatStore((state) => state.joinConversation);
   const handleSubmit = async (e) => {
@@ -16,9 +16,6 @@ function JoinChat({ setView }) {
     setLoading(true);
     const data = await joinConversation(chatId);
     if (data.success) {
-      if (isConnected) {
-        emit(CLIENT.JOIN_CHAT, { conversationId: chatId, user: data.user });
-      }
       setChatId("");
     }
     setLoading(false);

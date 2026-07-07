@@ -1,162 +1,248 @@
+// pages/AuthPage.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/authStore.js";
+import {
+  useAuthStore,
+  useIsAuthLoading,
+  useAuthError,
+} from "../store/authStore.js";
 import clsx from "clsx";
 
+// ============================================
+// FORM VALIDATION
+// ============================================
+
+const validateEmail = (email) => {
+  return email.trim().length > 0;
+};
+
+const validatePassword = (password) => {
+  return password.trim().length > 0;
+};
+
 function AuthPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
   const user = useAuthStore((state) => state.user);
   const login = useAuthStore((state) => state.login);
   const register = useAuthStore((state) => state.register);
-  const loading = useAuthStore((state) => state.isAuthLoading);
-  const error = useAuthStore((state) => state.authError);
+  const isLoading = useIsAuthLoading();
+  const error = useAuthError();
   const clearError = useAuthStore((state) => state.clearError);
+
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const isFormValid = isLogin
+    ? validateEmail(formData.email) && validatePassword(formData.password)
+    : formData.username.trim().length > 0 &&
+      validateEmail(formData.email) &&
+      validatePassword(formData.password);
+
+  // ============================================
+  // EFFECTS
+  // ============================================
 
   useEffect(() => {
     clearError();
-  }, [clearError]);
+  }, [isLogin, clearError]);
 
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear error on input change
+    if (error) clearError();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLogin && (!email.trim() || !password.trim())) return;
-    if (!isLogin && (!username.trim() || !email.trim() || !password.trim()))
-      return;
     clearError();
-    const data = isLogin ? { email, password } : { username, email, password };
-    const res = isLogin ? await login(data) : await register(data);
 
-    if (res?.success) {
-      alert(isLogin ? "Login successful" : "Registration successful");
-      navigate("/");
+    if (!isFormValid) return;
+
+    const { username, email, password } = formData;
+    const data = isLogin ? { email, password } : { username, email, password };
+
+    const result = isLogin ? await login(data) : await register(data);
+
+    if (result?.success) {
+      navigate("/", { replace: true });
     }
   };
+
+  const toggleMode = () => {
+    setIsLogin((prev) => !prev);
+    setFormData({
+      username: "",
+      email: "",
+      password: "",
+    });
+  };
+
+  // ============================================
+  // RENDER
+  // ============================================
 
   return (
     <div className="min-h-screen w-full hero bg-base-200">
       <div className="hero-content flex-col lg:flex-row-reverse w-full lg:gap-10">
-        {/*hero text*/}
+        {/* Hero Text */}
         <div className="text-center lg:text-left">
           <h1 className="text-2xl lg:text-5xl font-bold">Chat App</h1>
-          <p className="py-8">
+          <p className="py-8 text-base-content/70">
             Connect with your friends and family in real-time
           </p>
         </div>
 
-        {/*Auth Card*/}
+        {/* Auth Card */}
         <div className="card w-full lg:max-w-lg shadow-md bg-base-100">
           <form className="card-body" onSubmit={handleSubmit}>
+            {/* Title */}
             <h2 className="card-title justify-center text-xl sm:text-2xl font-bold mb-2">
-              {isLogin ? "Login" : "Register"}
+              {isLogin ? "Welcome Back" : "Create Account"}
             </h2>
+            <p className="text-center text-sm text-base-content/60 mb-4">
+              {isLogin
+                ? "Sign in to continue to your chats"
+                : "Join the community and start chatting"}
+            </p>
 
+            {/* Username Field (Register only) */}
             {!isLogin && (
               <div className="form-control w-full space-y-2">
-                <label className="label">Username</label>
+                <label className="label text-sm font-medium">Username</label>
                 <input
                   type="text"
-                  value={username}
-                  placeholder="username"
-                  onChange={(e) => setUsername(e.target.value)}
-                  disabled={loading}
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="Choose a username"
+                  disabled={isLoading}
                   className={clsx(
-                    "input w-full rounded-md px-2 border-2 border-gray-200",
-                    "transition-all duration-200 ease-in-out",
-                    "focus:outline-none",
-                    "hover:border-gray-500",
+                    "input input-bordered w-full",
+                    "transition-all duration-200",
+                    "focus:input-primary",
+                    "disabled:opacity-50",
                   )}
                 />
               </div>
             )}
 
+            {/* Email Field */}
             <div className="form-control w-full space-y-2">
-              <label className="label">Email</label>
+              <label className="label text-sm font-medium">Email</label>
               <input
                 type="email"
-                placeholder="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                disabled={isLoading}
                 className={clsx(
-                  "input validator",
-                  "w-full rounded-md px-2 border-2 border-gray-200",
-                  "transition-all duration-200 ease-in-out",
-                  "focus:outline-none",
-                  "hover:border-gray-500",
+                  "input input-bordered w-full",
+                  "transition-all duration-200",
+                  "focus:input-primary",
+                  "disabled:opacity-50",
+                  formData.email &&
+                    !validateEmail(formData.email) &&
+                    "input-error",
                 )}
+                required
               />
+              {formData.email && !validateEmail(formData.email) && (
+                <span className="text-xs text-error">
+                  Please enter a valid email
+                </span>
+              )}
             </div>
 
+            {/* Password Field */}
             <div className="form-control w-full space-y-2">
-              <label className="label">Password</label>
+              <label className="label text-sm font-medium">Password</label>
               <input
                 type="password"
-                required
-                minLength={8}
-                title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-                value={password}
-                placeholder="*******"
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                disabled={isLoading}
                 className={clsx(
-                  "input validator",
-                  "w-full rounded-md px-2 border-2 border-gray-200",
-                  "transition-all duration-200 ease-in-out",
-                  "focus:outline-none",
-                  "hover:border-gray-400",
+                  "input input-bordered w-full",
+                  "transition-all duration-200",
+                  "focus:input-primary",
+                  "disabled:opacity-50",
+                  formData.password &&
+                    !validatePassword(formData.password) &&
+                    "input-error",
                 )}
+                required
               />
-              <p className="validator-hint">
-                Must be more than 8 characters, including
-                <br />
-                At least one number
-                <br />
-                At least one lowercase letter
-                <br />
-                At least one uppercase letter
-              </p>
+              {formData.password && !validatePassword(formData.password) && (
+                <span className="text-xs text-error">
+                  Password must be at least 8 characters
+                </span>
+              )}
+              {!isLogin &&
+                formData.password &&
+                validatePassword(formData.password) && (
+                  <span className="text-xs text-success">
+                    ✓ Password is valid
+                  </span>
+                )}
             </div>
 
-            {error && !loading && (
+            {/* Error Message */}
+            {error && (
               <div className="alert alert-error text-sm mt-2">
                 <span>{error}</span>
               </div>
             )}
 
+            {/* Submit Button */}
             <div className="form-control mt-4">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isLoading || !isFormValid}
                 className="btn btn-primary w-full"
               >
-                {loading ? (
-                  <span className="loading loading-spinner loading-sm"></span>
+                {isLoading ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    {isLogin ? "Signing in..." : "Creating account..."}
+                  </>
                 ) : isLogin ? (
-                  "Login"
+                  "Sign In"
                 ) : (
-                  "Register"
+                  "Create Account"
                 )}
               </button>
             </div>
 
-            <div className="text-center mt-4 font-semibold font-sans">
-              {isLogin ? "already have an account? " : "dont have an account? "}
+            {/* Toggle Mode */}
+            <div className="text-center mt-4">
+              <span className="text-sm text-base-content/60">
+                {isLogin
+                  ? "Don't have an account?"
+                  : "Already have an account?"}
+              </span>
               <button
                 type="button"
-                onClick={() => setIsLogin((prev) => !prev)}
-                className="text-sm text-primary hover:underline"
+                onClick={toggleMode}
+                className="text-sm text-primary hover:underline ml-2 font-medium"
+                disabled={isLoading}
               >
-                {isLogin ? "register" : "login"}
+                {isLogin ? "Create one" : "Sign in"}
               </button>
             </div>
           </form>

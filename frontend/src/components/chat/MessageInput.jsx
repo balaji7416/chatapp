@@ -1,126 +1,122 @@
+// components/MessageInput.jsx
+import { useState, useRef, useCallback } from "react";
 import { useChatStore } from "../../store/chatStore.js";
 import { useSocketStore } from "../../store/socketStore.js";
 import { useAuthStore } from "../../store/authStore.js";
 import { CLIENT } from "../../lib/events.js";
 import clsx from "clsx";
-import { useState, useRef } from "react";
 
 function MessageInput() {
-  const [msg, setmsg] = useState("");
+  const [message, setMessage] = useState("");
   const typingTimeoutRef = useRef(null);
   const user = useAuthStore((state) => state.user);
   const emit = useSocketStore((state) => state.emit);
-  const isConnected = useSocketStore((state) => state.isConnected);
+  const isConnected =
+    useSocketStore((state) => state.connectionState) === "connected";
 
-  const addMessage = useChatStore((state) => state.addMessage);
-  const replaceMessage = useChatStore((state) => state.replaceMessage);
-  const removeMessage = useChatStore((state) => state.removeMessage);
   const sendMessage = useChatStore((state) => state.sendMessage);
-  const currConversationId = useChatStore(
+  const currentConversationId = useChatStore(
     (state) => state.currentConversationId,
   );
 
-  const handleTyping = () => {
-    if (!currConversationId || !isConnected) return;
-    
-    emit(CLIENT.TYPING_START, { conversationId: currConversationId, user });
+  const handleTypingStop = useCallback(() => {
+    if (!currentConversationId || !isConnected) return;
+    emit(CLIENT.TYPING_STOP, { conversationId: currentConversationId, user });
 
-    //clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    //set timeout to emit typing stop
-    typingTimeoutRef.current = setTimeout(() => {
-      handleTypingStop();
-    }, 2000);
-  };
-
-  const handleTypingStop = () => {
-    if (!currConversationId || !isConnected) return;
-    
-    emit(CLIENT.TYPING_STOP, { conversationId: currConversationId, user });
-    
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
-  };
+  }, [currentConversationId, isConnected, emit, user]);
 
-  const handleSend = async () => {
-    if (!msg.trim()) return;
-    if (!currConversationId) {
-      console.error("no conversation selected, cannot send message");
+  const handleTyping = useCallback(() => {
+    if (!currentConversationId || !isConnected) {
+      console.log("[Msg Input] socket not connected or no current conversation, cannot emit typing start")
       return;
     }
+    emit(CLIENT.TYPING_START, { conversationId: currentConversationId, user });
 
-    //stop typing before sending message
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(handleTypingStop, 2000);
+  }, [currentConversationId, isConnected, emit, user, handleTypingStop]);
+
+  const handleSend = useCallback(async () => {
+    if (!message.trim() || !currentConversationId) return;
+
     handleTypingStop();
 
-    const tempId = crypto.randomUUID(); //generate unique id for message
-    const tempMsg = {
-      conversationId: currConversationId,
-      content: msg,
-      replyToId: null,
-      messageId: tempId,
-      user_id: user.id,
-      created_at: new Date().toISOString(),
-    };
+    const tempId = crypto.randomUUID();
+    setMessage("");
 
-    //optimistic update for sender
-    addMessage(currConversationId, tempMsg);
-
-    //emit immediately
-    setmsg("");
-
-    //api call in the background
-    const realMsg = await sendMessage(currConversationId, msg);
+    // Send via API
+    const realMsg = await sendMessage(
+      currentConversationId,
+      message.trim(),
+      tempId,
+    );
 
     if (realMsg) {
+      // Broadcast via socket
       if (isConnected) {
-        const socketMsg = {
-          conversationId: currConversationId,
-          content: msg,
+        emit(CLIENT.MESSAGE_SEND, {
+          conversationId: currentConversationId,
+          content: message.trim(),
           replyToId: null,
           messageId: realMsg.id,
-          user_id: user.id,
-          created_at: realMsg.created_at, // Use DB timestamp
-        };
-        emit(CLIENT.SEND_MESSAGE, socketMsg);
+          userId: user.id,
+          createdAt: realMsg.created_at,
+        });
       }
-      replaceMessage(currConversationId, tempId, realMsg);
     } else {
-      //remove the msg if failed to send
-      removeMessage(currConversationId, tempId);
+      // Remove failed message
+      //done in chatstore sendMessage
     }
-  };
+  }, [
+    message,
+    currentConversationId,
+    user,
+    isConnected,
+    emit,
+    sendMessage,
+    handleTypingStop,
+  ]);
 
-  const handleKeyPress = (e) => {
-    if (e.key !== "Enter") {
-      handleTyping();
-    }
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key !== "Enter") {
+        handleTyping();
+      }
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    },
+    [handleTyping, handleSend],
+  );
 
   return (
-    <div className="flex items-center gap-2 p-3">
+    <div className="flex items-center gap-2 p-3 border-t border-gray-200">
       <input
         type="text"
-        onKeyDown={handleKeyPress}
-        value={msg}
-        onChange={(e) => setmsg(e.target.value)}
+        onKeyDown={handleKeyDown}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
         className={clsx(
-          "input validator",
-          "w-full md:max-w-150 rounded-md px-2 border-2 border-gray-200",
-          "transition-all duration-200 ease-in-out",
-          "focus:outline-none",
-          "hover:border-gray-400",
+          "input input-bordered flex-1",
+          "transition-all duration-200",
+          "focus:outline-none focus:input-primary",
         )}
+        placeholder="Type a message..."
+        disabled={!currentConversationId}
       />
-      <button onClick={handleSend} className="btn btn-primary">
+      <button
+        onClick={handleSend}
+        className="btn btn-primary"
+        disabled={!message.trim() || !currentConversationId}
+      >
         Send
       </button>
     </div>
