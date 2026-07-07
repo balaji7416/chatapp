@@ -3,16 +3,9 @@ import pool from "../config/db.js";
 // get conversation members
 const getConversationMembers = async (conversation_id) => {
   const query = `
-        select c.id as conversation_id, c.name as conversation_name, u.id, u.username, u.email, u.full_name, cm.role as role, cm.last_read_message_id,
-        coalesce(m.created_at, to_timestamp(0)) as last_read_at
-        from users u
-        inner join conversation_members cm
-        on u.id = cm.user_id
-        inner join conversations c
-        on c.id = cm.conversation_id
-        left join messages m
-        on m.id = cm.last_read_message_id
-        where cm.conversation_id = $1
+        select * from conversation_members
+        inner join users on conversation_members.user_id = users.id
+        where conversation_id = $1
     `;
   const { rows } = await pool.query(query, [conversation_id]);
   return rows;

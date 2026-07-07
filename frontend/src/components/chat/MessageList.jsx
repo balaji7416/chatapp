@@ -1,122 +1,69 @@
+// components/MessageList.jsx
 import { useEffect, useRef } from "react";
 import { SERVER } from "../../lib/events.js";
-
-import { useChatStore, useCurrentMessages } from "../../store/chatStore.js";
-import { useSocketStore } from "../../store/socketStore.js";
-import { useAuthStore } from "../../store/authStore.js";
-
+import {
+  useChatStore,
+  useCurrentMessages,
+  // useCurrentConversation,
+} from "../../store/chatStore.js";
 import MessageBubble from "./MessageBubble.jsx";
 import TypingIndicator from "./TypingIndicator.jsx";
 
 function MessageList() {
-  const isMessagesLoading = useChatStore((state) => state.isMessagesLoading);
   const currentConvId = useChatStore((state) => state.currentConversationId);
+  const isMessagesLoading = useChatStore((state) => state.isLoading.messages);
   const fetchMessages = useChatStore((state) => state.fetchMessages);
-  const addMessage = useChatStore((state) => state.addMessage);
-  const addTypingUser = useChatStore((state) => state.addTypingUser);
-  const removeTypingUser = useChatStore((state) => state.removeTypingUser);
-  const on = useSocketStore((state) => state.on);
-  const isConnected = useSocketStore((state) => state.isConnected);
-  const user = useAuthStore((state) => state.user);
+  const messages = useCurrentMessages();
+  // const currentConversation = useCurrentConversation();
 
-  const msgsEndRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
-  //fetch messages on reload
+  // Fetch messages on conversation change
   useEffect(() => {
     if (!currentConvId) return;
     fetchMessages(currentConvId);
-  }, [fetchMessages, currentConvId]);
+  }, [currentConvId, fetchMessages]);
 
-  const messages = useCurrentMessages();
-
-  //auto scroll to new msg
+  // Auto-scroll to bottom
   useEffect(() => {
-    msgsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // mount handlers for socket events
-  useEffect(() => {
-    if (!isConnected) {
-      console.log("socket not connected, skipping socket events mount");
-      return;
-    }
-    const onMessage = (res) => {
-      const message = res.data;
-      const conversationId = message?.conversationId;
-      addMessage(conversationId, message);
-
-      // If this message is in the active conversation, immediately mark as read:
-      // 1. Update our own last_read_at locally (so the sender sees ticks flip right away via the socket event)
-      // 2. Emit markAsRead so the DB and sender's store get updated
-      if (conversationId === currentConvId && user?.id) {
-        const readAt = message.created_at || new Date().toISOString();
-        useChatStore
-          .getState()
-          .updateMemberLastRead(conversationId, user.id, readAt);
-        useChatStore.getState().markAsRead(conversationId);
-      }
-    };
-    const onTypingStart = ({ data }) => {
-      if (data.conversationId === currentConvId && data.user) {
-        addTypingUser(data.conversationId, data.user);
-      }
-
-      //auto remove typing user after 3 seconds (if stop event not received)
-      setTimeout(() => {
-        removeTypingUser(data.conversationId, data.user?.id);
-      }, 3000);
-    };
-
-    const onTypingStop = ({ data }) => {
-      if (data.conversationId === currentConvId && data.user) {
-        removeTypingUser(data.conversationId, data.user?.id);
-      }
-    };
-    const cleanupMessage = on(SERVER.NEW_MESSAGE, onMessage);
-    const cleanUpTypingStart = on(SERVER.TYPING_START, onTypingStart);
-    const cleanUpTypingStop = on(SERVER.TYPING_STOP, onTypingStop);
-    return () => {
-      cleanupMessage();
-      cleanUpTypingStart();
-      cleanUpTypingStop();
-    };
-  }, [
-    on,
-    addMessage,
-    isConnected,
-    currentConvId,
-    addTypingUser,
-    removeTypingUser,
-    user,
-  ]);
-
-  //socket event handlers
-  if (!currentConvId)
+  // Loading states
+  if (!currentConvId) {
     return (
       <div className="h-full flex items-center justify-center text-base-content/55 font-semibold">
-        select a conversation to start chatting
+        Select a conversation to start chatting
       </div>
     );
-  if (isMessagesLoading)
+  }
+
+  if (isMessagesLoading) {
     return (
       <div className="flex items-center justify-center text-base-content/55 font-semibold">
-        messages loading ...
+        Loading messages...
       </div>
     );
-  if (messages.length === 0)
+  }
+
+  if (messages.length === 0) {
     return (
       <div className="h-full flex items-center justify-center text-base-content/55 font-semibold">
-        No messages
+        No messages yet. Say hello! 👋
       </div>
     );
+  }
+
   return (
     <div className="h-full p-4 pb-16 overflow-y-auto space-y-2">
-      {messages.map((m) => (
-        <MessageBubble key={m.messageId || m.id} message={m} />
+      {messages.map((message) => (
+        <MessageBubble
+          key={message.id || message.messageId}
+          message={message}
+        />
       ))}
-      <TypingIndicator />
-      {/*for auto scroll to new msg */}
-      <div ref={msgsEndRef}></div>
+      <TypingIndicator conversationId={currentConvId}/>
+      <div ref={messagesEndRef} />
     </div>
   );
 }

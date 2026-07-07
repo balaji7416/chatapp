@@ -2,8 +2,8 @@ import {
   useChatStore,
   useCurrentConversation,
   useCurrentMembers,
-} from "../../store/chatStore.js";
-import { useAuthStore } from "../../store/authStore.js";
+} from "../store/chatStore.js";
+import { useAuthStore } from "../store/authStore.js";
 import { useEffect, useState } from "react";
 import { Users, Copy, Check } from "lucide-react";
 

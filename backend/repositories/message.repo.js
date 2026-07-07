@@ -75,17 +75,29 @@ const isOwnerOfMessage = async (message_id, user_id) => {
 
 const markMessagesAsRead = async (conversation_id, user_id) => {
   const query = `
-    update conversation_members
-    set last_read_message_id = (
-        select last_message_id 
-        from conversations
-        where id = $1
-    ) 
-    where conversation_id = $1
-    and user_id = $2
-    returning *, now() as last_read_at
+    UPDATE conversation_members
+    SET 
+      last_read_message_id = (
+        SELECT last_message_id 
+        FROM conversations
+        WHERE id = $1
+      ),
+      last_read_at = current_timestamp
+    WHERE conversation_id = $1
+    AND user_id = $2
+    RETURNING 
+      user_id,
+      conversation_id,
+      last_read_message_id,
+      last_read_at
   `;
+
   const { rows } = await pool.query(query, [conversation_id, user_id]);
+
+  if (rows.length === 0) {
+    throw new Error("User not found in conversation");
+  }
+
   return rows[0];
 };
 

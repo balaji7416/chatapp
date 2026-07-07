@@ -17,9 +17,10 @@ const createConversation = asyncHandler(async (req, res) => {
   const { name, members = [], isGroup } = req.body;
   const currentUser = req?.user?.username;
 
-  if (!Array.isArray(members) || members.length === 0) {
-    throw new ApiError(400, "atleast one member is required");
-  }
+  // any no.of members is allowed
+  // if (!Array.isArray(members) || members.length === 0) {
+  //   throw new ApiError(400, "atleast one member is required");
+  // }
 
   //user names of members including current user
   const grpMembers = [...new Set([...members, currentUser])];

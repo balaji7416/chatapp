@@ -3,7 +3,9 @@ import { useChatStore } from "../../store/chatStore.js";
 import ConversationItem from "./ConversationItem.jsx";
 
 function ConversationList() {
-  const conversations = useChatStore((state) => state.conversations);
+  const conversations = useChatStore((state) =>
+    Array.isArray(state.conversations) ? state.conversations : [],
+  );
   const fetchConversations = useChatStore((state) => state.fetchConversations);
   const isConversationsLoading = useChatStore(
     (state) => state.isConversationsLoading,
@@ -45,7 +47,7 @@ function ConversationList() {
         <ConversationItem
           key={c.id}
           conversation={c}
-          onClick={() => selectConversation(c.id)}
+          onSelect={() => selectConversation(c.id)}
           isActive={c.id === currConversationId}
         />
       ))}
