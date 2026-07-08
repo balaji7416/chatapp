@@ -5,32 +5,25 @@ dotenv.config();
 // create a pool
 
 let pool;
+if (process.env.NODE_ENV === "development") {
+  //docker
+  pool = new Pool({
+    host: "postgres",
+    user: "postgres",
+    database: "chatapp",
+    port: 5432,
+  });
+} else {
+  //render
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
 
-pool = new Pool({
-  user: "postgres",
-  password: "postgres",
-  port: "5432",
-  host: "postgres",
-  database: "chatapp",
-});
-
-// if (process.env.NODE_ENV === "development") {
-//   pool = new Pool({
-//     user: "postgres",
-//     password: "Nellore@2811",
-//     database: "chatapp",
-//     port: 5432,
-//   });
-// } else {
-//   pool = new Pool({
-//     connectionString: process.env.DATABASE_URL,
-//     ssl: { rejectUnauthorized: false },
-
-//     max: 20,
-//     idleTimeoutMillis: 30000,
-//     connectionTimeoutMillis: 10000,
-//   });
-// }
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  });
+}
 
 export const testDB = async () => {
   const client = await pool.connect();

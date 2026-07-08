@@ -60,10 +60,10 @@ export const useSocketStore = create((set, get) => ({
     });
 
     // Create socket
-    const socket_url = import.meta.env.VITE_SOCKET_URL || "/"; //for docker
-    // import.meta.env.VITE_ENV === "development"
-    //   ? "/api"
-    //   : import.meta.env.VITE_SOCKET_URL;
+    const socket_url =
+      import.meta.env.VITE_ENV === "development"
+        ? "/"
+        : import.meta.env.VITE_SOCKET_URL || "/"; //for docker
     const socket = io(socket_url, {
       auth: { token },
       transports: ["websocket", "polling"],
