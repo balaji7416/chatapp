@@ -14,33 +14,11 @@ Supports one-to-one and group conversations with real-time messaging, typing ind
 
 ## Live Demo
 
-🌐 **Application:** # 💬 ChatApp
+🌐 **Application:** https://chatapp-sigma-murex.vercel.app
 
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
-![Express](https://img.shields.io/badge/Express-Backend-000000?logo=express)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql)
-![Socket.IO](https://img.shields.io/badge/Socket.IO-Real_Time-010101?logo=socketdotio)
-![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker)
-
-**A full-stack real-time chat application built with React, Express, PostgreSQL, and Socket.IO.**
-
-Supports one-to-one and group conversations with real-time messaging, typing indicators, unread message tracking, read receipts, JWT authentication, and a fully Dockerized deployment.
+> Create two accounts in separate browser windows to experience real-time messaging, typing indicators, unread counts, and read receipts.
 
 ---
-
-## Live Demo
-
-🌐 **Application:** [Live Demo](https://chatapp-sigma-murex.vercel.app/)
-
-> Create two accounts in separate browser windows to explore real-time messaging, typing indicators, and read receipts.
-
----
-
-## Overview
-
-ChatApp is a full-stack real-time messaging application built to explore the architecture and engineering challenges behind modern chat platforms. Rather than focusing only on message exchange, the project implements the supporting systems required to deliver a responsive chat experience—real-time event handling, conversation state management, unread message tracking, read receipts, typing indicators, secure authentication, and persistent user sessions.
-
-> Create two accounts in separate browser windows to explore real-time messaging, typing indicators, and read receipts.
 
 ## Overview
 
